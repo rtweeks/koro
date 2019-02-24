@@ -21,6 +21,10 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
+- containers >= 0.6.0.1 && < 1
+- lens >= 4.17 && < 5
+- mtl >= 2.2.2 && < 3
+- split >= 0.2.3.3 && < 1
 
 library:
   source-dirs: src
@@ -35,6 +39,9 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - oro-parser
+    - YamlReference >= 0.10.0 && < 1
+    - bytestring >= 0.10.8.2 && < 1
+    - utf8-string >= 1.0.1.1 && < 2
 
 tests:
   oro-parser-test:
