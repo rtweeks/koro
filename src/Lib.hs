@@ -82,7 +82,9 @@ normalize tokens = let
             tt <- use nsTokensLeft
             tr <- processToken tt
             case tr of
-                DocumentComplete -> return ()
+                DocumentComplete -> do
+                    dropL 1 nsTokensLeft
+                    return ()
                 ConsumedTokens i -> do
                     dropL i nsTokensLeft
                     processTokens
@@ -99,17 +101,17 @@ processToken tt@(t:ts) = do
 
         -- BeginNode
         'N' -> do
+            beforeAction <- use nsBeforeNestedNode
+            beforeAction
             nsNodeTag .= "?"
             nsInScalar .= False
-            -- TODO: If in a Sequence, we need to @tell "`_,_`("@ and increment the top-of-stack closing parent count
-            -- TODO: If in a Mapping, we need to...?
-            pushL 1 nsClosingParens
+            pushL 0 nsClosingParens
             return $ ConsumedTokens 1
 
         -- BeginAnchor
         'A' -> do
             let (_:nt:_) = ts
-            let ('t':n) = yeastContent nt
+            let n = yeastContent nt
             anchorId <- nsAnchorsSeen <%= (+ 1)
             nsAnchorMapping .at n ?= anchorId
             tell "`&__`(#token(\""
@@ -140,6 +142,7 @@ processToken tt@(t:ts) = do
             nsInScalar .= True
             nsAccumulatedText .= ""
             tellNodeStart '.'
+            incrementClosingParens
             return $ ConsumedTokens 1
 
         -- Indicator (only important during scalar, indicates non-plain)
@@ -346,15 +349,15 @@ tellNodeStart nodeIndicator = do
         '{' -> tell "`{__}`("
     tag <- use nsNodeTag
     tell "#token("
-    tell $ stringLiteral tag
-    tell "),"
+    tell $ stringLiteral ("\"" ++ tag ++ "\"")
+    tell ",\"String\"),"
 
 tellScalarValue :: (Show a) => NormalizerOp a
 tellScalarValue  = do
     value <- use nsAccumulatedText
     tell "#token("
-    tell $ stringLiteral value
-    tell ")"
+    tell $ stringLiteral $ stringLiteral value
+    tell ",\"String\")"
 
 closeNode :: (Show a) => NormalizerOp a
 closeNode  = do
@@ -383,7 +386,7 @@ openMapping :: (Show a) => NormalizerOp a
 openMapping  = do
     tellNodeStart '{'
     prepareForMappingEntry
-    pushL (joinKeyValuePairs) nsJoiningOps
+    pushL (joinKeyToValue) nsJoiningOps
 
 joinKeyValuePairs :: (Show a) => NormalizerOp a
 joinKeyValuePairs = do
@@ -405,7 +408,6 @@ joinKeyToValue  = do
 closeContainer :: (Show a) => Char -> NormalizerOp a
 closeContainer _ = do
     tell "`.List{\"_,_\"}`(.KList)"
-    -- popL1 nsJoiningOps
     dropL 1 nsJoiningOps
 
 stringLiteral :: String -> String
