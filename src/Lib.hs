@@ -112,7 +112,7 @@ processToken tt@(t:ts) = do
         'A' -> do
             let (_:nt:_) = ts
             let n = yeastContent nt
-            anchorId <- nsAnchorsSeen <%= (+ 1)
+            anchorId <- nsAnchorsSeen <+= 1
             nsAnchorMapping .at n ?= anchorId
             tell "`&__`(#token(\""
             tell $ show anchorId
@@ -141,14 +141,14 @@ processToken tt@(t:ts) = do
         'S' -> do
             nsInScalar .= True
             nsAccumulatedText .= ""
-            tellNodeStart '.'
-            incrementClosingParens
+            -- Don't tellNodeStart here because an 'I' token might change the tag
             return $ ConsumedTokens 1
 
         -- Indicator (only important during scalar, indicates non-plain)
         'I' -> do
             inScalar <- use nsInScalar
-            when inScalar $ nsNodeTag .= "!"
+            nodeTag <- use nsNodeTag
+            when (inScalar && nodeTag == "?") $ nsNodeTag .= "!"
             return $ ConsumedTokens 1
 
         -- Text content
@@ -172,6 +172,11 @@ processToken tt@(t:ts) = do
 
         -- EndScalar
         's' -> do
+            -- Tell node start here because we can't know the tag until we see
+            -- the text, but it could start with escaped text or have multiple
+            -- texts, but there will be only on EndScalar
+            tellNodeStart '.'
+            incrementClosingParens
             tellScalarValue
             return $ ConsumedTokens 1
 

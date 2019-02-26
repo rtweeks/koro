@@ -11,7 +11,7 @@ main :: IO ()
 main = do
     (contentName, content) <- getContent
     let (output, _) = normalize (yaml contentName content False)
-    putStr output
+    putStrLn output
 
 -- Environment variable KRUN_IS_NOT_FILE indicates the argument is the code to be parsed
 argIsYaml :: IO Bool
