@@ -10,13 +10,25 @@ import Lib
 main :: IO ()
 main = do
     (contentName, content) <- getContent
-    let (output, _) = normalize (yaml contentName content False)
+    showBreakdown <- getShowBreakdown
+    let cfg = config {ncBreakdown = showBreakdown}
+    let (output, _) = normalizeWithConfig cfg (yaml contentName content False)
     putStrLn output
 
 -- Environment variable KRUN_IS_NOT_FILE indicates the argument is the code to be parsed
 argIsYaml :: IO Bool
 argIsYaml = do
     evv <- lookupEnv "KRUN_IS_NOT_FILE"
+    return $ case evv of
+        Just "" -> False
+        Nothing -> False
+        otherwise -> True
+
+-- Environment variable BRKDWN indicates we should run in breakdown mode, showing
+-- which token triggered which output
+getShowBreakdown :: IO Bool
+getShowBreakdown  = do
+    evv <- lookupEnv "BRKDWN"
     return $ case evv of
         Just "" -> False
         Nothing -> False

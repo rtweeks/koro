@@ -1,6 +1,9 @@
 {-# LANGUAGE TemplateHaskell #-}
 module Lib
     ( normalize
+    , normalizeWithConfig
+    , config
+    , NormalizerConfig (..)
     ) where
 
 import qualified Data.Map.Strict as M
@@ -32,7 +35,8 @@ instance Ord NodeHandle where
     compare NodeHandle{nodeId=a} NodeHandle{nodeId=b} = compare a b
 
 data NormalizerConfig = NormalizerConfig
-    { }
+    { ncBreakdown :: Bool
+    }
 
 data NormalizerState a = NormalizerState
     { _nsTokensLeft :: [a]
@@ -56,7 +60,9 @@ data TokenResult    = DocumentComplete
 makeLenses ''NormalizerState
 
 config :: NormalizerConfig
-config = NormalizerConfig {}
+config = NormalizerConfig
+    { ncBreakdown = False
+    }
 
 initialNormalizerState :: (Show a) => [a] -> NormalizerState a
 initialNormalizerState tokens = NormalizerState
@@ -72,9 +78,12 @@ initialNormalizerState tokens = NormalizerState
     , _nsAccumulatedText = ""
     }
 
-normalize :: (Show a) => [a] -> (String, [a])
-normalize tokens = let
-    (state', output) = execRWS processTokens (config) (initialNormalizerState tokens)
+normalize :: (Show a) => [a] -> (String ,[a])
+normalize tokens = normalizeWithConfig config tokens
+
+normalizeWithConfig :: (Show a) => NormalizerConfig -> [a] -> (String, [a])
+normalizeWithConfig cfg tokens = let
+    (state', output) = execRWS processTokens (cfg) (initialNormalizerState tokens)
     in (output, state' ^. nsTokensLeft)
     where
         processTokens :: (Show a) => NormalizerOp a
@@ -92,6 +101,8 @@ normalize tokens = let
 processToken :: (Show a) => [a] -> NormalizerFun a TokenResult
 processToken [] = return DocumentComplete
 processToken tt@(t:ts) = do
+    whenDoing ncBreakdown $ tell $ printf "\n%c: " (yeastCode t)
+
     case yeastCode t of
         -- EndDocument
         'o' -> return DocumentComplete
@@ -448,6 +459,13 @@ dropL n l = l #%= drop n
 (#.) :: S.MonadState s m => (b -> s -> Const a s) -> ((a -> Const a a ) -> b) -> m a
 l #. f = use (l . f)
 infixl 8 #.
+
+--- Monad Operations ---
+
+whenDoing :: (Show b) => (NormalizerConfig -> Bool) -> NormalizerOp b -> NormalizerOp b
+whenDoing getInMode op = do
+    inMode <- asks getInMode
+    when inMode op
 
 --- Yeast Functions ---
 
