@@ -4,29 +4,22 @@ module ORO-SEMANTICS-COMMON
   imports ORO-SEMANTICS-SYNTAX
 
   configuration <T>
-    <k> readSource </k>
-    <source> $PGM:Sequence </source>
-    <stmt> .Map </stmt>
-    <prog> .List </prog>
+    <k> readSourceSeq( $PGM:Sequence ) </k>
   </T>
 
-  syntax K  ::= "readSource"
-              | "readStatement" "(" K ")"
+  syntax K  ::= "readSourceSeq" "(" Sequence ")"
+              | "readSource" "(" Nodes "->" K ")"
+              | "readStatement" "(" KeyValueNodePairs "->" Map ")"
               | "executeProgram"
 
-  rule  <k> readSource => readStatement( StmtPairs ) ~> readSource </k>
-        <source> [ Tag ( { _ StmtPairs },Stmts) ] => [ Tag Stmts ] </source>
-        <stmt> _ => .Map </stmt>
-  rule  <k> readSource => executeProgram </k>
-        <source> [ _ .Nodes ] => . </source>
+  rule  readSourceSeq( [ _ Ns ] ) => readSource( Ns -> . )
+  rule  readSource( .Nodes -> P ) => P
+  rule  readSource( ({ _ StmtPairs },Stmts) -> P ) => readStatement( StmtPairs -> .Map ) ~> readSource( Stmts -> P )
 
-  rule  <k> readStatement( ( . _ Key : . VTag Value ),StmtPairs => StmtPairs ) ...</k>
-        <stmt> .Map => Key |-> Value </stmt>
+  rule  readStatement( (( . _ Key : . VTag Value ),StmtPairs) -> S ) => readStatement( StmtPairs -> S[Key <- Value] )
         requires  (VTag =/=String "?")
-          andBool (VTag =/=String "!expr")
-  rule  <k> readStatement( .Nodes ) => . ...</k>
-        <stmt> S => . </stmt>
-        <prog>... .List => ListItem(S) </prog>
-        // TODO: This requires that S is not an "actionable" intrinsic
+        andBool   (VTag =/=String "!expr")
+  rule  readStatement( .KeyValueNodePairs -> S) ~> readSource( Stmts -> P) => readSource( Stmts -> (P ~> S) )
+        // TODO: This "requires" S is not an "actionable" intrinsic or macro invocation
 
 endmodule
