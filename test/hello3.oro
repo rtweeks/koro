@@ -1,0 +1,7 @@
+- print: "Your name: "
+- print:
+    catenate: "Hello, "
+    with:
+      catenate:
+        read until: "\n"
+      with: ".\n"
