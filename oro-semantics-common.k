@@ -5,14 +5,14 @@ module ORO-SEMANTICS-COMMON
 
   configuration <T>
     <k> readSourceSeq( $PGM:Sequence ) </k>
+    <refs> .Map </refs>
   </T>
 
   syntax K  ::= "readSourceSeq" "(" Sequence ")"
               | "readSource" "(" Nodes "->" K ")"
-              | "readStatement" "(" KeyValueNodePairs "->" Map ")"
-              | "readExpr" "(" Value ":" KeyValueNodePairs "->" Map ")"
-              | "readKey" "(" Value "->" Data "=" K ")"
-              | "setInMap" "(" Data "->" K ")"
+              | "resolve" "(" Node "->" Data "," ResolveCompletion ")"
+              | "resolveKey" "(" Node "->" Data "," Node ")"
+              | "completeResolve" "(" Data "," ResolveCompletion ")"
 
   syntax Data ::= String
                 | "yseq" "(" "|" String "|" Datas ")"
@@ -21,35 +21,36 @@ module ORO-SEMANTICS-COMMON
 
   syntax Datas      ::= List{Data, ","}
 
+  syntax ResolveCompletion  ::= "append"
+                              | "assocToKey" "(" Data ")"
+                              | "assocWithResolved" "(" Node ")"
+
   rule  readSourceSeq( [ _ Ns ] ) => readSource( Ns -> . )
   rule  readSource( .Nodes -> P ) => P
-  rule  readSource( ({ _ Pieces },Stmts) -> P ) => readStatement( Pieces -> .Map ) ~> readSource( Stmts -> P )
+  rule  readSource( ({ T Pieces },Stmts) -> P ) => resolve( { T Pieces } -> null, append ) ~> readSource( Stmts -> P )
+  rule  completeResolve( ymap( | _ | DStmt ), append ) ~> readSource( Stmts -> P ) => readSource( Stmts -> (P ~> DStmt) )
 
-  rule  readStatement( (( Key:Value : . VTag Value ),Pieces) -> S ) => readKey( Key -> "null" = Value ) ~> readStatement( Pieces -> S )
-        requires  (VTag =/=String "?")
-        andBool   (VTag =/=String "!expr")
-  rule  readStatement( (( Key:Value : { _ ExprPieces } ),Pieces) -> S ) => readExpr( Key : ExprPieces -> .Map ) ~> readStatement( Pieces -> S )
-  rule  readStatement( .KeyValueNodePairs -> S) ~> readSource( Stmts -> P) => readSource( Stmts -> (P ~> S) )
-        // TODO: This "requires" S is not an "actionable" intrinsic or macro invocation
-
-  rule  readExpr( OK : (( Key:Value : . "!" Value ),Pieces) -> E ) => readKey(Key -> "null" = Value) ~> readExpr( OK : Pieces -> E )
-  rule  readExpr( OK : (( Key:Value : { _ SubExprPieces } ),Pieces) -> E) => readExpr( Key : SubExprPieces -> .Map ) ~> readExpr( OK : Pieces -> E )
-  // Disolving readExpr to read the expression key
-  rule  readExpr( K : .KeyValueNodePairs -> E ) => readKey( K -> "null" = E )
-
-  rule readKey( (. "!" S) -> "null" = E ) => setInMap( S -> E )
-  rule readKey( (. "?" S) -> "null" = E ) => setInMap( S -> E )
-    // TODO: This should require that S not be any parseable pattern (e.g. an
-    // integer), which should each be handled by its own rule
-  rule readKey( ( [ T Ns ] ) -> "null" = E ) => readKey( ( [ T Ns ] ) -> yseq( | T | .Datas ) = E )
-  rule readKey( ( { T Es } ) -> "null" = E ) => readKey( ( { T Es } ) -> ymap( | T | .Map ) = E )
-  /* TODO
-  rule readKey( ( [ _ (N,Ns) ] ) -> yseq( | T | L ) = E) => ???
-  rule readKey( ( { _ ((K : V),Es) } ) -> ymap( | T | M ) = E) => ???
-  */
-  rule readKey( ( [ _ .Nodes ] ) -> K = E) => setInMap( K -> E )
-  rule readKey( ( { _ .KeyValueNodePairs } ) -> K = E) => setInMap( K -> E )
-  // Disolving setInMap into a parent expression or statement
-  rule setInMap( K -> V ) ~> readExpr( OK : Pieces -> E ) => readExpr( OK : Pieces -> E[K <- V] )
-  rule setInMap( K -> V ) ~> readStatement( Pieces -> S ) => readStatement( Pieces -> S[K <- V] )
+  rule  resolve( ( . T Value ) -> null, C ) => completeResolve( Value , C )
+        requires  (T =/=String "?")
+        andBool   (T =/=String "!expr")
+  rule  resolve( ( [ T Items ] ) -> null , C ) => resolve( ( [ T Items ] ) -> yseq( | T | .Datas ) , C )
+  rule  resolve( ( [ _ .Nodes ] ) -> yseq( | T | L ) , C ) => completeResolve( yseq( | T | L ) , C )
+  rule  resolve( ( [ _ (Item,Items) ] ) -> yseq( | T | L ) , C ) => resolve( Item -> null , append ) ~> resolve( ( [ T Items ] ) -> yseq( | T | L ) , C )
+  rule  completeResolve( D , append ) ~> resolve( ( [ _ Items ] ) -> yseq( | T | L ), C ) => resolve( ( [ T Items ] ) -> yseq( | T | L,D ) , C )
+  rule  resolve( ( { T Pieces } ) -> null , C ) => resolve( ( { T Pieces } ) -> ymap( | T | .Map ), C )
+  rule  resolve( ( { _ .KeyValueNodePairs } ) -> ymap( | T | M ) , C ) => completeResolve( ymap( | T | M), C )
+  rule  resolve( ( { _ ((Key : Value),Pairs) } ) -> ymap( | T | M ) , C ) => resolveKey( Key -> null, Value ) ~> resolve( ( { T Pairs } ) -> ymap( | T | M ), C )
+  rule  resolveKey( ( . _ KeyVal ) -> null, V ) => resolve( V -> null, assocToKey(KeyVal) )
+  rule  resolveKey( ( [ T Items ] ) -> null, V ) => resolve( ( [ T Items ] ) -> null, assocWithResolved(V) )
+  rule  resolveKey( ( { T Pairs } ) -> null, V ) => resolve( ( { T Pairs } ) -> null, assocWithResolved(V) )
+  rule  <k>resolveKey( ( & R K ) -> null, V) => resolveKey( K -> null, V ) ...</k>
+        <refs>... R |-> (_ => K) ...</refs>
+  rule  <k>resolveKey( ( * R ) -> null, V) => resolveKey( K -> null, V ) ...</k>
+        <refs>... R |-> K ...</refs>
+  rule  completeResolve( K, assocWithResolved( V ) ) => resolve( V -> null, assocToKey( K ) )
+  rule  completeResolve( V, assocToKey( K ) ) ~> resolve( ( { _ Pairs } ) -> ymap( | T | M ), C ) => resolve( ( { T Pairs } ) -> ymap( | T | M[K <- V] ), C )
+  rule  <k>resolve( ( & R V ) -> null , C ) => resolve( V -> null , C ) ...</k>
+        <refs>... R |-> (_ => V) ...</refs>
+  rule  <k>resolve( ( * R ) -> null , C ) => resolve( V -> null , C ) ...</k>
+        <refs>... R |-> V ...</refs>
 endmodule
