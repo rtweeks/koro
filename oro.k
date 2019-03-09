@@ -1,5 +1,5 @@
-require "oro-semantics-common.k"
+require "oro-semantics-resolve.k"
 
 module ORO
-  imports ORO-SEMANTICS-COMMON
+  imports ORO-SEMANTICS-RESOLVE
 endmodule
