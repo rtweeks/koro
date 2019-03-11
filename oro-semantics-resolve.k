@@ -1,29 +1,39 @@
 require "oro-semantics-common.k"
+require "oro-semantics-extrinsics.k"
 
 module ORO-SEMANTICS-RESOLVE
   imports ORO-SEMANTICS-COMMON
+  imports ORO-SEMANTICS-EXTRINSICS
+  imports LIST
 
-  syntax K  ::= "readSource" "(" Nodes "->" K ")"
+  syntax K  ::= "resolveSource" "(" Nodes "->" K ")"
               | "resolve" "(" Node "->" Data "," ResolveCompletion ")"
               | "resolveKey" "(" Node "->" Data "," Node ")"
               | "completeResolve" "(" Data "," ResolveCompletion ")"
+              | "yseqReverse" "(" "|" String "|" Datas "->" Datas "," ResolveCompletion ")"
 
   syntax ResolveCompletion  ::= "append"
                               | "assocToKey" "(" Data ")"
                               | "assocWithResolved" "(" Node ")"
 
-  rule  readSourceSeq( [ _ Ns ] ) => readSource( Ns -> . )
-  rule  readSource( .Nodes -> P ) => P
-  rule  readSource( ({ T Pieces },Stmts) -> P ) => resolve( { T Pieces } -> null, append ) ~> readSource( Stmts -> P )
-  rule  completeResolve( ymap( | _ | DStmt ), append ) ~> readSource( Stmts -> P ) => readSource( Stmts -> (P ~> DStmt) )
+  rule  readSourceSeq( [ _ Ns ] ) => resolveSource( Ns -> . )
+  rule  resolveSource( .Nodes -> P ) => registerExtrinsics( P ) ~> P
+  rule  resolveSource( ({ T Pieces },Stmts) -> P ) => resolve( { T Pieces } -> null, append ) ~> resolveSource( Stmts -> P )
+  rule  completeResolve( ymap( | _ | DStmt ), append ) ~> resolveSource( Stmts -> P ) => resolveSource( Stmts -> (P ~> DStmt) )
 
   rule  resolve( ( . T Value ) -> null, C ) => completeResolve( Value , C )
         requires  (T =/=String "?")
         andBool   (T =/=String "!expr")
+  rule  resolve( ( . T Value ) -> null, C ) => completeResolve( expr( Value ) , C )
+        requires  (T ==String "?")
+        orBool    (T ==String "!expr")
   rule  resolve( ( [ T Items ] ) -> null , C ) => resolve( ( [ T Items ] ) -> yseq( | T | .Datas ) , C )
-  rule  resolve( ( [ _ .Nodes ] ) -> yseq( | T | L ) , C ) => completeResolve( yseq( | T | L ) , C )
+  // Because we can only cons into L, we need to reverse L when creating the completeResolve
+  rule  resolve( ( [ _ .Nodes ] ) -> yseq( | T | L ) , C ) => yseqReverse( | T | L -> .Datas, C )
+  rule  yseqReverse( | T | (I,Is) -> L, C ) => yseqReverse( | T | Is -> (I,L), C)
+  rule  yseqReverse( | T | .Datas -> L, C ) => completeResolve( yseq( | T | L ) , C )
   rule  resolve( ( [ _ (Item,Items) ] ) -> yseq( | T | L ) , C ) => resolve( Item -> null , append ) ~> resolve( ( [ T Items ] ) -> yseq( | T | L ) , C )
-  rule  completeResolve( D , append ) ~> resolve( ( [ _ Items ] ) -> yseq( | T | L ), C ) => resolve( ( [ T Items ] ) -> yseq( | T | L,D ) , C )
+  rule  completeResolve( D , append ) ~> resolve( ( [ _ Items ] ) -> yseq( | T | L ), C ) => resolve( ( [ T Items ]) -> yseq( | T | D,L ), C )
   rule  resolve( ( { T Pieces } ) -> null , C ) => resolve( ( { T Pieces } ) -> ymap( | T | .Map ), C )
   rule  resolve( ( { _ .KeyValueNodePairs } ) -> ymap( | T | M ) , C ) => completeResolve( ymap( | T | M), C )
   rule  resolve( ( { _ ((Key : Value),Pairs) } ) -> ymap( | T | M ) , C ) => resolveKey( Key -> null, Value ) ~> resolve( ( { T Pairs } ) -> ymap( | T | M ), C )

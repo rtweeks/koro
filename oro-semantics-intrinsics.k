@@ -4,7 +4,33 @@ module ORO-SEMANTICS-INTRINSICS
   imports ORO-SEMANTICS-COMMON
 
   syntax Set  ::= "oroIntrinsics"                 [function]
+                | "setFromList" "(" List ")"      [function]
+                | "skeysDefineSubr"               [function]
+                | "skeysDefineFun"                [function]
+                | "skeysImportFrom"               [function]
+                | "skeysUseMacros"                [function]
   syntax Bool ::= "oroIsIntrinsic" "(" Map ")"    [function]
+
+  rule setFromList( .List ) => .Set
+  rule setFromList( ListItem(V) Is ) => (SetItem(V) setFromList(Is))
+
+  rule skeysDefineSubr => (
+    SetItem("Oro/Core/Subroutine/Define")
+    SetItem("as")
+  )
+
+  rule skeysDefineFun => (
+    SetItem("Oro/Core/Subroutine/Define")
+    SetItem("returning")
+    SetItem("as")
+  )
+
+  rule skeysImportFrom => (
+    SetItem("Oro/Core/Subroutine/Import")
+    SetItem("from")
+  )
+
+  rule skeysUseMacros => SetItem("Oro/Core/Macro/Use from")
 
   rule oroIntrinsics => (
     // Program flow
@@ -18,9 +44,9 @@ module ORO-SEMANTICS-INTRINSICS
     SetItem( SetItem("Oro/Core/Variable/Address of") )
 
     // Subroutines
-    SetItem( SetItem("Oro/Core/Subroutine/Define") SetItem("as") )
-    SetItem( SetItem("Oro/Core/Subroutine/Define") SetItem("as") SetItem("returning") )
-    SetItem( SetItem("Oro/Core/Subroutine/Import") SetItem("from") )
+    SetItem( skeysDefineSubr )
+    SetItem( skeysDefineFun )
+    SetItem( skeysImportFrom )
     SetItem( SetItem("Oro/Core/Subroutine/Abstract") )
     SetItem( SetItem("Oro/Core/Subroutine/Indirectly invoke") SetItem("with") )
 
@@ -28,7 +54,7 @@ module ORO-SEMANTICS-INTRINSICS
     SetItem( SetItem("Oro/Core/Macro/Define") SetItem("as") )
     SetItem( SetItem("Oro/Core/Macro/Expand") SetItem("with substitutions") )
     SetItem( SetItem("Oro/Core/Define expression handler") )
-    SetItem( SetItem("Oro/Core/Macro/Use from") )
+    SetItem( skeysUseMacros )
   )
 
   rule oroIsIntrinsic( M ) => keys(M) in oroIntrinsics

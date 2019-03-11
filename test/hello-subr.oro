@@ -1,0 +1,6 @@
+- Oro/Core/Subroutine/Define:
+    打印: string
+  as:
+  - print: 打印
+
+- 打印: "你好，世界。\n"

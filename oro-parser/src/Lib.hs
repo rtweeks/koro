@@ -437,9 +437,9 @@ stringLiteral s = "\"" ++ (escapedContent s) ++ "\""
             | ordC >= 32 && ordC <= 127     =
                 (c:escapedContent cs)
             | ordC >= 128 && ordC <= 0xffff =
-                (printf "\\u%04d" ordC) ++ (escapedContent cs)
+                (printf "\\u%04X" ordC) ++ (escapedContent cs)
             | otherwise                     =
-                (printf "\\U%08d" ordC) ++ (escapedContent cs)
+                (printf "\\U%08X" ordC) ++ (escapedContent cs)
             where
                 ordC :: Int
                 ordC = ord c

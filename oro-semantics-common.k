@@ -6,6 +6,7 @@ module ORO-SEMANTICS-COMMON
   configuration <T>
     <k> readSourceSeq( $PGM:Sequence ) </k>
     <refs> .Map </refs>
+    <extrinsics> .Map </extrinsics>
   </T>
 
   syntax K  ::= "readSourceSeq" "(" Sequence ")"
@@ -13,6 +14,7 @@ module ORO-SEMANTICS-COMMON
   syntax Data ::= String
                 | "yseq" "(" "|" String "|" Datas ")"
                 | "ymap" "(" "|" String "|" Map ")"
+                | "expr" "(" String ")"
                 | "null"
 
   syntax Datas      ::= List{Data, ","}
