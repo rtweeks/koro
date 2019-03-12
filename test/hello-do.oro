@@ -1,0 +1,2 @@
+- Oro/Core/Flow/Do:
+  - print: "Hello, world!\n"

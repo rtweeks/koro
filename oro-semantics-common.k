@@ -10,6 +10,7 @@ module ORO-SEMANTICS-COMMON
   </T>
 
   syntax K  ::= "readSourceSeq" "(" Sequence ")"
+              | "yseqToK" "(" Datas ")"                       [macro]
 
   syntax Data ::= String
                 | "yseq" "(" "|" String "|" Datas ")"
@@ -18,4 +19,7 @@ module ORO-SEMANTICS-COMMON
                 | "null"
 
   syntax Datas      ::= List{Data, ","}
+
+  rule  <k>yseqToK( .Datas ) => . ...</k>
+  rule  <k>yseqToK( ymap( | _ | M ),Ds ) => M ~> yseqToK( Ds ) ...</k>
 endmodule

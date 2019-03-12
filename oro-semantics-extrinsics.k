@@ -10,7 +10,6 @@ module ORO-SEMANTICS-EXTRINSICS
               | "loadMacros" "(" Map ")"
               | "subroutine" "(" Map ":" K ")"                [strict(2)]
               | "function" "(" Map "->" String ":" K ")"      [strict(3)]
-              | "yseqToK" "(" Datas ")"                       [macro]
 
   rule  registerExtrinsics( . ) => .
   rule  <k>registerExtrinsics( M:Map ~> K ) => registerSubr( M ) ~> registerExtrinsics( K ) ...</k>
@@ -41,9 +40,6 @@ module ORO-SEMANTICS-EXTRINSICS
         requires notBool (keys(Args) in oroIntrinsics)
   // TODO: "Oro/Core/Subroutine/Import" "from"
   // TODO: "Oro/Core/Macro/Use from"
-
-  rule  yseqToK( .Datas ) => .:K
-  rule  yseqToK( yseq( | _ | S ),Ds ) => S ~> yseqToK( Ds )
 
   // Don't know why, but the <k>...</k> notation is required here for the disolve rules
   rule  <k>( "Oro/Core/Subroutine/Define" |-> _ "as" |-> _ ) => . ...</k>
