@@ -7,6 +7,7 @@ module ORO-SEMANTICS-COMMON
     <k> readSourceSeq( $PGM:Sequence ) </k>
     <refs> .Map </refs>
     <extrinsics> .Map </extrinsics>
+    <labels> .Map </labels>
   </T>
 
   syntax K  ::= "readSourceSeq" "(" Sequence ")"

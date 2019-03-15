@@ -1,0 +1,7 @@
+- Oro/Core/Flow/Go to label: forward jump
+- Oro/Core/Flow/Label: backward jump
+- print: "Hello, world!\n"
+- Oro/Core/Flow/Go to label: end
+- Oro/Core/Flow/Label: forward jump
+- Oro/Core/Flow/Go to label: backward jump
+- Oro/Core/Flow/Label: end
