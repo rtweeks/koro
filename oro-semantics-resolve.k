@@ -7,6 +7,7 @@ module ORO-SEMANTICS-RESOLVE
   imports LIST
 
   syntax K  ::= "resolveSource" "(" Nodes "->" K ")"
+              | "concatStatements" "(" Nodes "|" Nodes "->" Nodes ")"
               | "resolve" "(" Node "->" Data "," ResolveCompletion ")"
               | "resolveKey" "(" Node "->" Data "," Node ")"
               | "completeResolve" "(" Data "," ResolveCompletion ")"
@@ -20,6 +21,10 @@ module ORO-SEMANTICS-RESOLVE
   rule  resolveSource( .Nodes -> P ) => registerExtrinsics( P ) ~> P
   rule  resolveSource( ({ T Pieces },Stmts) -> P ) => resolve( { T Pieces } -> null, append ) ~> resolveSource( Stmts -> P )
   rule  completeResolve( ymap( | _ | DStmt ), append ) ~> resolveSource( Stmts -> P ) => resolveSource( Stmts -> (P ~> DStmt) )
+  rule  resolveSource( ([ T NStmts ],Stmts) -> P ) => concatStatements(NStmts | .Nodes -> Stmts) ~> resolveSource( .Nodes -> P )
+  rule  concatStatements((S,Ss) | Rs -> Stmts) => concatStatements(Ss | (S,Rs) -> Stmts)
+  rule  concatStatements(.Nodes | (S,Rs) -> Stmts) => concatStatements(.Nodes | Rs -> (S,Stmts))
+  rule  concatStatements(.Nodes | .Nodes -> Stmts) ~> resolveSource( .Nodes -> P ) => resolveSource( Stmts -> P )
 
   rule  resolve( ( . T Value ) -> null, C ) => completeResolve( Value , C )
         requires  (T =/=String "?")
