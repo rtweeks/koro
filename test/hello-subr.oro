@@ -1,5 +1,5 @@
 - Oro/Core/Subroutine/Define:
-    打印: string
+  - {argument: 打印, as: string}
   as:
   - print: 打印
 

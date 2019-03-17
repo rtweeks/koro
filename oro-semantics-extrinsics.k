@@ -1,21 +1,24 @@
 require "oro-semantics-intrinsics.k"
 require "oro-semantics-nsskeys.k"
+require "oro-semantics-types.k"
 
 module ORO-SEMANTICS-EXTRINSICS
   imports ORO-SEMANTICS-INTRINSICS
   imports ORO-SEMANTICS-NSSKEYS
+  imports ORO-SEMANTICS-TYPES
 
   syntax K  ::= "registerExtrinsics" "(" K ")"
               | "registerResolvedExtrinsic" "(" Map ")"
               | "nsskeyResolvedInExtrinsicScan"
               | "registerSubr" "(" Map ")"
-              | "nsskeyResolvedInSubrArgs"
+              | "subrAccumArg"
               | "registerFun" "(" Map ")"
               | "nsskeyResolvedInFunArgs"
               | "registerImports" "(" Map ")"
               | "loadMacros" "(" Map ")"
-              | "subroutine" "(" Map ":" K ")"                [strict(2)]
-              | "function" "(" Map "->" String ":" K ")"      [strict(3)]
+              | "subroutine" "(" VarDecls ":" K ")"                [strict(2)]
+              // TODO: function return type should be DataType
+              | "function" "(" VarDecls "->" String ":" K ")"      [strict(3)]
 
   rule  registerExtrinsics( . ) => .
   rule  registerExtrinsics( M:Map ~> Rest ) => nonspecResolve(M, nsskeyResolvedInExtrinsicScan) ~> registerResolvedExtrinsic( .Map ) ~> registerExtrinsics( Rest )
@@ -39,18 +42,17 @@ module ORO-SEMANTICS-EXTRINSICS
           (keys(M) in SetItem(skeysUseMacros))
         )
 
-  rule  registerSubr( ("Oro/Core/Subroutine/Define" |-> ymap( | _ | Args )) ("as" |-> yseq( | _ | Body)) ) => nonspecResolve(Args, nsskeyResolvedInSubrArgs) ~> subroutine(.Map : yseqToK( Body ))
-        requires notBool (keys(Args) in oroIntrinsics)
-  rule  nsskeyResolvedInSubrArgs ~> resolvedNonspecKey(R) ~> nonspecResolve(M, Tag) ~> subroutine(Args : Body) => nonspecResolve(M, Tag) ~> subroutine((Args R) : Body)
+  rule  registerSubr( ("Oro/Core/Subroutine/Define" |-> yseq( | _ | Args )) ("as" |-> yseq( | _ | Body)) ) => resolveTypes(Args, subrAccumArg) ~> subroutine(.VarDecls : yseqToK( Body ))
+  rule  subrAccumArg ~> D:VarDecl ~> Rest ~> subroutine(Args : Body) => Rest ~> subroutine((D,Args) : Body)
   rule  <k>subroutine(Args : Body) => . ...</k>
-        <extrinsics>... .Map => keys(Args) |-> subroutine( Args : Body )</extrinsics>
-  rule  registerFun( ("Oro/Core/Subroutine/Define" |-> ymap( | _ | Args)) ("returning" |-> RetType:String) ("as" |-> yseq( | _ | Body)) ) => nonspecResolve(Args, nsskeyResolvedInFunArgs) ~> function(.Map -> RetType : yseqToK(Body))
-        requires notBool (keys(Args) in oroIntrinsics)
-  rule  registerFun( ("Oro/Core/Subroutine/Define" |-> ymap( | _ | Args)) ("returning" |-> yval(|"?"| RetType)) ("as" |-> yseq( | _ | Body)) ) => nonspecResolve(Args, nsskeyResolvedInFunArgs) ~> function(.Map -> RetType : yseqToK(Body))
-        requires notBool (keys(Args) in oroIntrinsics)
-  rule  nsskeyResolvedInFunArgs ~> resolvedNonspecKey(R) ~> nonspecResolve(M, Tag) ~> function(Args -> RetType : Body) => nonspecResolve(M, Tag) ~> function((Args R) -> RetType : Body)
+        <extrinsics>... .Map => varNames(Args) |-> subroutine( Args : Body )</extrinsics>
+        // TODO: requires notOverridingIntrinsic(Args)
+  rule  registerFun( ("Oro/Core/Subroutine/Define" |-> yseq( | _ | Args)) ("returning" |-> RetType:String) ("as" |-> yseq( | _ | Body)) ) => resolveTypes(Args, subrAccumArg) ~> function(.VarDecls -> RetType : yseqToK(Body))
+  rule  registerFun( ("Oro/Core/Subroutine/Define" |-> yseq( | _ | Args)) ("returning" |-> yval(|"?"| RetType)) ("as" |-> yseq( | _ | Body)) ) => resolveTypes(Args, subrAccumArg) ~> function(.VarDecls -> RetType : yseqToK(Body))
+  rule  subrAccumArg ~> D:VarDecl ~> Rest ~> function(Args -> RetType : Body) => Rest ~> function((D,Args) -> RetType : Body)
   rule  <k>function(Args -> RetType : Body) => . ...</k>
-        <extrinsics>... .Map => keys(Args) |-> function( Args -> RetType : Body )</extrinsics>
+        <extrinsics>... .Map => varNames(Args) |-> function( Args -> RetType : Body )</extrinsics>
+        // TODO: requires notOverridingIntrinsic(Args)
   // TODO: "Oro/Core/Subroutine/Import" "from"
   // TODO: "Oro/Core/Macro/Use from"
 

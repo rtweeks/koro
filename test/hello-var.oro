@@ -1,0 +1,4 @@
+- Oro/Core/Variable/Define:
+  - {variable: useless, as: string}
+  for:
+  - print: "Hello, world!\n"

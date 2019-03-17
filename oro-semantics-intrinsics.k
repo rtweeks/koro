@@ -47,6 +47,7 @@ module ORO-SEMANTICS-INTRINSICS
 
     // Variables
     SetItem( SetItem("Oro/Core/Variable/Define") SetItem("for") )
+    SetItem( SetItem("Oro/Core/Variable/Define") SetItem("for") SetItem("returning value of"))
     SetItem( SetItem("Oro/Core/Variable/Address of") )
 
     // Subroutines
