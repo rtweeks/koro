@@ -1,0 +1,6 @@
+- Oro/Core/Variable/Define:
+  - {variable: useless, as: s32int}
+  for:
+  - Oro/Core/Flow/Go to label: jump forward
+- Oro/Core/Flow/Label: jump forward
+- print: "Hello, world!\n"

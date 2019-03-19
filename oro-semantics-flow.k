@@ -1,9 +1,11 @@
 require "oro-semantics-intrinsics.k"
 require "oro-semantics-nsskeys.k"
+require "oro-semantics-variables.k"
 
 module ORO-SEMANTICS-FLOW
   imports ORO-SEMANTICS-INTRINSICS
   imports ORO-SEMANTICS-NSSKEYS
+  imports ORO-SEMANTICS-VARIABLES
 
   syntax K  ::= "jumpContext" "(" K "," Map "," Map ")"
               | "forwardJump" "(" Data ")"
@@ -40,6 +42,9 @@ module ORO-SEMANTICS-FLOW
           (keys(M) in SetItem(skeysDo))
         )
   rule  forwardJump( D ) ~> flowResolvedStmt(.Map) => forwardJump( D )
+  rule  forwardJump( D ) ~> yseqToK(.Datas) => forwardJump( D )
+  rule  forwardJump( D ) ~> yseqToK(S,Ss) => forwardJump( D ) ~> S ~> yseqToK(Ss)
+  rule  forwardJump( D ) ~> exitScope( B, E ) => exitScope( B, E ) ~> forwardJump( D )
   rule  flowResolvedStmt( S ) => S
 
 endmodule
