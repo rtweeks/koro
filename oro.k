@@ -8,4 +8,13 @@ module ORO
   imports ORO-SEMANTICS-INTRINSICS
   imports ORO-SEMANTICS-RESOLVE
   imports ORO-SEMANTICS-VARIABLES
+
+  syntax K  ::= "extrinsicCall" "(" Map ")"
+              | "subrCall" "(" Map "," Map "," K ")"
+
+  // rule  <k>M:Map => extrinsicCall(M) ...</k>
+  //       requires  notBool oroIsIntrinsic(M)
+
+  // rule  <k>extrinsicCall(M) => subrCall(M, ArgTypes, Body)</k>
+  //       <extrinsics>... keys(M) |-> subroutine(ArgTypes : Body) ...</extrinsics>
 endmodule

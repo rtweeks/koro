@@ -1,3 +1,11 @@
 #!/bin/bash
 
-krun --parser "$(dirname "$0")/parser.sh" "$@"
+: ${ORO_WORDSIZE:=64}
+: ${ORO_ENDIAN:=little}
+
+# TODO: Load the <arch> in the configuration with machine architecture
+#  -cARCH="wordSize|->$ORO_WORDSIZE endian|->$ORO_ENDIAN" \
+
+krun \
+  --parser "$(dirname "$0")/parser.sh" \
+  "$@" \

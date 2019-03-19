@@ -4,19 +4,22 @@ require "oro-semantics-nsskeys.k"
 module ORO-SEMANTICS-TYPES
   imports ORO-SEMANTICS-COMMON
   imports ORO-SEMANTICS-NSSKEYS
+  imports MINT
 
   syntax Signedness ::= "signed"
                       | "unsigned"
 
   syntax DataType ::= "bool_type"
-                    | "string_type"
                     | "int_type" "(" Signedness Int ")"
                     | "float_type" "(" Int ")"
-                    | "memaddr_type"
                     | "buffer_type" "(" Int ")"
-                    | "sequence_type"
-                    | "mapping_type"
-                    | "yamlnode_type"
+                    | OpaqueDataType
+
+  syntax OpaqueDataType ::= "memaddr_type"
+                          | "string_type"
+                          | "sequence_type"
+                          | "mapping_type"
+                          | "yamlnode_type"
 
   syntax K  ::= "resolveTypes" "(" Datas "," K ")"
               | "varDefMap" "(" Map ")"
@@ -24,8 +27,9 @@ module ORO-SEMANTICS-TYPES
               | "resolveTypeEntry"
               | "normalizeType"
               | VarDecl
-              | "varNames" "(" VarDecls ")"                 [function]
-              | "varNamesAccum" "(" VarDecls "->" Set ")"   [function]
+  syntax Set  ::= "varNames" "(" VarDecls ")"                 [function]
+                | "varNamesAccum" "(" VarDecls "->" Set ")"   [function]
+  syntax Int  ::= "sizeDataType" "(" DataType ")"             [function]
 
   syntax VarDecl ::= "varDecl" "(" Data ":" DataType ")"
   syntax VarDecls ::= List{VarDecl, ","}
@@ -92,6 +96,8 @@ module ORO-SEMANTICS-TYPES
   // TODO: Support all integer formats for tag:yaml.org,2002:int
   rule  normalizeType ~> ymap(|_| "memory buffer" |-> yval(|T| Size)) => buffer_type(String2Int(Size))
         requires T in (SetItem("?") SetItem("tag:yaml.org,2002:int"))
+  rule  normalizeType ~> ymap(|_| yval(|"?"| "memory buffer") |-> yval(|T| Size)) => buffer_type(String2Int(Size))
+        requires T in (SetItem("?") SetItem("tag:yaml.org,2002:int"))
 
   // TODO: ymap(|_| "abstract subroutine" |-> ymap(|_| Keys))
   // TODO: ymap(|_| "abstract subroutine" |-> ymap(|_| Keys) "returning" |-> RetType)
@@ -106,4 +112,28 @@ module ORO-SEMANTICS-TYPES
   rule  varNames(L) => varNamesAccum(L -> .Set)
   rule  varNamesAccum(.VarDecls -> S) => S
   rule  varNamesAccum((varDecl(Name: _),Ds) -> S) => varNamesAccum(Ds -> (S SetItem(Name)))
+
+  syntax Bool ::= "isOpaqueType" "(" DataType ")"         [function]
+  rule  isOpaqueType(T:OpaqueDataType) => true
+  rule  isOpaqueType(_) => false    [owise]
+
+  // This is actually ORO-SEMANTICS-MEMORY
+  syntax Memory ::= "memory" "(" Bytes "/" Int ")"
+                  | "initMemory" "(" Int ")"              [function]
+  syntax Byte   ::= MInt
+                  | "nil"
+  syntax Bytes  ::= List{Byte, " "}
+                  | "initBytes" "(" Int ")"               [function]
+
+  rule  initMemory( N ) => memory(initBytes(N) / N)
+  rule  initBytes( 0 ) => .Bytes
+  rule  initBytes( N ) => (nil initBytes(N -Int 1))
+        requires N >Int 0
+
+  rule  <k>sizeDataType( _:OpaqueDataType ) => ((Bits +Int 7) /Int 8) ...</k>
+        <arch>... wordSize |-> Bits ...</arch>
+  rule  sizeDataType( bool_type ) => 1
+  rule  sizeDataType( int_type(_ Bits) ) => ((Bits +Int 7) /Int 8)
+  rule  sizeDataType( float_type( Bits ) ) => ((Bits +Int 7) /Int 8)
+  rule  sizeDataType( buffer_type( Bytes ) ) => Bytes
 endmodule

@@ -5,17 +5,22 @@ module ORO-SEMANTICS-FLOW
   imports ORO-SEMANTICS-INTRINSICS
   imports ORO-SEMANTICS-NSSKEYS
 
-  syntax K  ::= "forwardJump" "(" Data ")"
+  syntax K  ::= "jumpContext" "(" K "," Map "," Map ")"
+              | "forwardJump" "(" Data ")"
               | "nsskeyResolvedForFlow"
               | "flowResolvedStmt" "(" Map ")"
 
   rule  <k>("Oro/Core/Flow/Do" |-> yseq( | _ | L)) => yseqToK(L) ...</k>
 
   rule  <k>("Oro/Core/Flow/Label" |-> D) ~> K => K</k>
-        <labels>... .Map => (D |-> K)</labels>
+        <labels> L => L[D <- jumpContext((("Oro/Core/Flow/Label" |-> D) ~> K), L, E)] </labels>
+        <env> E </env>
 
-  rule  <k>("Oro/Core/Flow/Go to label" |-> D) ~> K => K'</k>
-        <labels>... D |-> K' ...</labels>
+  rule  <k>("Oro/Core/Flow/Go to label" |-> D) ~> K => NewContext</k>
+        <labels>... D |-> NewContext ...</labels>
+  rule  <k>jumpContext(K, L, E) ~> _ => K</k>
+        <labels> _ => L </labels>
+        <env> _ => E </env>
   rule  <k>("Oro/Core/Flow/Go to label" |-> D) => forwardJump( D ) ...</k>
         <labels>Ls</labels>
         requires notBool(D in_keys(Ls))

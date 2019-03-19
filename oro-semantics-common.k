@@ -7,11 +7,25 @@ module ORO-SEMANTICS-COMMON
     <k> readSourceSeq( $PGM:Sequence ) </k>
     <refs> .Map </refs>
     <extrinsics> .Map </extrinsics>
-    <labels> .Map </labels>
+    <scopeBin> 1 </scopeBin>
+    <startup> true </startup>
+    <context>
+      <labels> .Map </labels>
+      <env> .Map </env>
+    </context>
+    <store> .Map </store>
+    <storeBins> .Map </storeBins>
+    <arch> wordSize|->64 endian|->little </arch>
+    //<arch> $ARCH:Map </arch>
   </T>
 
+  syntax ArchDetail ::= "wordSize"
+                      | "endian"
+  syntax Endianness ::= "little"
+                      | "big"
   syntax K  ::= "readSourceSeq" "(" Sequence ")"
               | "yseqToK" "(" Datas ")"                       [macro]
+              | "invalidPointer"
 
   syntax Data           ::= TaggedScalar
                           | FixedTypeData
@@ -22,13 +36,14 @@ module ORO-SEMANTICS-COMMON
                           | "ymap" "(" "|" String "|" Map ")"
 
   syntax Datas      ::= List{Data, ","}
+  syntax Ints ::= List{Int, ","}
 
   rule  <k>yseqToK( .Datas ) => . ...</k>
   rule  <k>yseqToK( ymap( | _ | M ),Ds ) => M ~> yseqToK( Ds ) ...</k>
 
 
-  syntax K  ::= "containsQMarkYval" "(" Set ")"             [function]
-              | "isQMarkYval" "(" Data ")"                  [function]
+  syntax Bool ::= "containsQMarkYval" "(" Set ")"             [function]
+                | "isQMarkYval" "(" Data ")"                  [function]
   rule  containsQMarkYval(.Set) => false
   rule  containsQMarkYval(SetItem(I) Is) => isQMarkYval(I) orElseBool containsQMarkYval(Is)
   rule  isQMarkYval( yval(|"?"| _) ) => true
