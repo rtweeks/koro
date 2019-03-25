@@ -9,6 +9,7 @@ module ORO-SEMANTICS-EXPRESSION
   imports MINT
 
   syntax Bool ::= "isScalarExprTag" "(" String ")"                [function]
+                | "isGenericMapping" "(" Data ")"
   syntax K  ::= "evaluate" "(" DataType ":" Data "," K ")"
 
   // Literal values
@@ -34,6 +35,27 @@ module ORO-SEMANTICS-EXPRESSION
   rule  evaluate(yamlnode_type : S:String, Tag) => Tag ~> S
   rule  evaluate(yamlnode_type : yval(|T| S), Tag ) => Tag ~> yval(|T| S)
         requires notBool isScalarExprTag(T)
+
+  // TODO: Require scalar variable names tagged "?" are not resolvable as any tag but tag:yaml.org,2002:str (YAML 1.2 sec. 10.3.2)
+  rule  <k>evaluate(T : yval(|ST| VarName), Tag) => Tag ~> VarVal ...</k>
+        <env>... VarName |-> var(T, opaque(StoreLoc)) ...</env>
+        <store>... StoreLoc |-> VarVal ...</store>
+        requires isScalarExprTag(ST)
+  rule  <k>evaluate(int_type(Signedness Bits) : yval(|ST| VarName), Tag) => extractBytesVal(int_type(Signedness Bits), Content, Offset, Tag) ...</k>
+        <env>... VarName |-> var(T, bytes(StoreLoc, Offset)) ...</env>
+        <store>... StoreLoc |-> memory(Content / Length) ...</store>
+        requires isScalarExprTag(ST)
+  rule  <k>evaluate(T : (VarName:FixedTypeData), Tag) => Tag ~> VarVal ...</k>
+        <env>... VarName |-> var(T, opaque(StoreLoc)) ...</env>
+        <store>... StoreLoc |-> VarVal ...</store>
+        requires notBool isGenericMapping(VarName)
+  rule  <k>evaluate(T : (VarName:FixedTypeData), Tag) => extractBytesVal(T, Content, Offset, Tag) ...</k>
+        <env>... VarName |-> var(T, bytes(StoreLoc, Offset)) ...</env>
+        <store>... StoreLoc |-> memory(Content / Length) ...</store>
+        requires notBool isGenericMapping(VarName)
+
+  rule  evaluate(T : ymap(|MT| M), Tag) => evaluate(T : M, Tag)
+        requires isGenericMapping(ymap(|MT| M))
 
 
   rule  isScalarExprTag("?") => true

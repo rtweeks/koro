@@ -73,7 +73,15 @@ module ORO-SEMANTICS-EXTRINSICS
   syntax ArgEvals ::= List{ArgEval, ","}
   rule  <k> Call:Map => generateArgEvalPlan(Args, Call) ~> evaluateArgs(.ArgEvals) ~> executeSubroutine(Args, .Map, Body) ...</k>
         <extrinsics>... keys(Call) |-> subroutine(Args : Body) ...</extrinsics>
+  //rule  <k> Call:Map => generateArgEvalPlan(Args, Call) ~> evaluateArgs(.ArgEvals) ~> executeSubroutine((varDecl("result" : RetType),Args), .Map, Body) ...</k>
+  //      <extrinsics>... keys(Call) |-> function(Args -> RetType : Body) ...</extrinsics>
 
   rule  generateArgEvalPlan(.VarDecls, _) => .
   rule  generateArgEvalPlan((varDecl(Name : Type),VDs), Call) ~> evaluateArgs(AEs) => generateArgEvalPlan(VDs, Call) ~> evaluateArgs(evalArg(Name : Type <- Call[Name] ),AEs)
+
+  rule  evaluateArgs(.ArgEvals) => .
+  rule  evaluateArgs(AE,AEs) => AE ~> evaluateArgs(AEs)
+  // TODO: get evalArg(N : T <- ...) to be actualArg(N <- ...)
+  rule  evalArg(N : T <- Expr) => evaluate(T : Expr, actualArg(N))
+  rule  actualArg(N) ~> V:Data ~> Rest ~> executeSubroutine(Args, ArgVals, Body) => Rest ~> executeSubroutine(Args, ArgVals[N <- V], Body)
 endmodule

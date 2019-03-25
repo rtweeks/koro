@@ -33,6 +33,7 @@ module ORO-SEMANTICS-COMMON
                           | "null"
   syntax TaggedScalar   ::= "yval" "(" "|" String "|" String ")"
   syntax FixedTypeData  ::= String
+                          | Map
                           | "yseq" "(" "|" String "|" Datas ")"
                           | "ymap" "(" "|" String "|" Map ")"
 

@@ -1,0 +1,5 @@
+- Oro/Core/Variable/Define:
+  - {variable: useless, as: s32int}
+  for:
+  - Oro/Core/Flow/Label: nowhere
+- print: "Hello, world!\n"
