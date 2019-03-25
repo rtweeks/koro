@@ -13,6 +13,7 @@ module ORO-SEMANTICS-COMMON
       <labels> .Map </labels>
       <env> .Map </env>
     </context>
+    <globals> .Map </globals>
     <store> .Map </store>
     <storeBins> .Map </storeBins>
     <arch> wordSize|->64 endian|->little </arch>

@@ -48,15 +48,33 @@ module ORO-SEMANTICS-VARIABLES
   rule  initialValue( sequence_type ) => yseq(|"?"| .Datas)
   rule  initialValue( mapping_type ) => ymap(|"?"| .Map)
   rule  initialValue( yamlnode_type ) => yval(|"tag:yaml.org,2002:null"| "")
-  
+
   rule  enterScope(.VarDecls, _) => .
   rule  <k>enterScope((varDecl(Name: (T:OpaqueDataType)),Ds), ScopeBin) => consStoreBin(ScopeBin, !N) ~> enterScope(Ds, ScopeBin) ...</k>
         <env> E => E[Name <- var(T, opaque(!N))] </env>
-        <store> ... .Map => (!N:Int |-> initialValue(T)) ...</store>
+        <store>... .Map => (!N:Int |-> initialValue(T)) ...</store>
+        <startup> false </startup>
   rule  <k>enterScope((varDecl(Name: Type),Ds), ScopeBin) => consStoreBin(ScopeBin, !N) ~> enterScope(Ds, ScopeBin) ...</k>
         <env> E => E[Name <- var(Type, bytes(!N, 0))] </env>
         <store>... .Map => (!N:Int |-> initMemory(sizeDataType(Type))) ...</store>
+        <startup> false </startup>
         requires notBool(isOpaqueType(Type))
+  rule  <k>enterScope((varDecl(Name: Type),Ds), 0) => enterScope(Ds, 0) ...</k>
+        <globals>... Name|->var(T, S) ...</globals>
+        <env> E => E[Name <- var(T, S)] </env>
+        <startup> true </startup>
+  rule  <k>enterScope((varDecl(Name: (T:OpaqueDataType)),Ds), 0) => enterScope(Ds, 0) ...</k>
+        <globals> G </globals>
+        <env> E => E[Name <- var(T, opaque(!N))] </env>
+        <store>... .Map => (!N:Int |-> initialValue(T)) ...</store>
+        <startup> true </startup>
+        requires notBool(Name in_keys(G))
+  rule  <k>enterScope((varDecl(Name: Type),Ds), 0) => enterScope(Ds, 0) ...</k>
+        <globals> G </globals>
+        <env> E => E[Name <- var(Type, bytes(!N, 0))] </env>
+        <store>... .Map => (!N:Int |-> initMemory(sizeDataType(Type))) ...</store>
+        <startup> true </startup>
+        requires notBool(isOpaqueType(Type) orBool (Name in_keys(G)))
 
   rule  <k>consStoreBin(0, _) => . ...</k>
   rule  <k>consStoreBin(Bin, SKey) => . ...</k>
