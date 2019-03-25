@@ -1,8 +1,10 @@
+require "oro-semantics-expression.k"
 require "oro-semantics-intrinsics.k"
 require "oro-semantics-nsskeys.k"
 require "oro-semantics-types.k"
 
 module ORO-SEMANTICS-EXTRINSICS
+  imports ORO-SEMANTICS-EXPRESSION
   imports ORO-SEMANTICS-INTRINSICS
   imports ORO-SEMANTICS-NSSKEYS
   imports ORO-SEMANTICS-TYPES
@@ -16,9 +18,11 @@ module ORO-SEMANTICS-EXTRINSICS
               | "nsskeyResolvedInFunArgs"
               | "registerImports" "(" Map ")"
               | "loadMacros" "(" Map ")"
-              | "subroutine" "(" VarDecls ":" K ")"                [strict(2)]
-              // TODO: function return type should be DataType
-              | "function" "(" VarDecls "->" String ":" K ")"      [strict(3)]
+              | StatementCallable
+
+  syntax StatementCallable  ::= "subroutine" "(" VarDecls ":" K ")"
+                              // TODO: function return type should be DataType
+                              | "function" "(" VarDecls "->" String ":" K ")"
 
   rule  registerExtrinsics( . ) => .
   rule  registerExtrinsics( M:Map ~> Rest ) => nonspecResolve(M, nsskeyResolvedInExtrinsicScan) ~> registerResolvedExtrinsic( .Map ) ~> registerExtrinsics( Rest )
