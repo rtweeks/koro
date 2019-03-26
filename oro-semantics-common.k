@@ -52,4 +52,10 @@ module ORO-SEMANTICS-COMMON
   rule  isQMarkYval( yval(|T| _) ) => false
         requires T =/=String "?"
   rule  isQMarkYval( _:FixedTypeData ) => false
+
+  syntax Bool ::= "isGenericMapping" "(" Data ")"             [function]
+  rule  isGenericMapping(ymap(|"?"| _)) => true
+  rule  isGenericMapping(ymap(|"!"| _)) => true
+  rule  isGenericMapping(ymap(|"tag:yaml.org,2002:map"| _)) => true
+  rule  isGenericMapping(_) => false      [owise]
 endmodule

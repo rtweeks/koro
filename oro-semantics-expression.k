@@ -9,7 +9,6 @@ module ORO-SEMANTICS-EXPRESSION
   imports MINT
 
   syntax Bool ::= "isScalarExprTag" "(" String ")"                [function]
-                | "isGenericMapping" "(" Data ")"
   syntax K  ::= "evaluate" "(" DataType ":" Data "," K ")"
 
   // Literal values

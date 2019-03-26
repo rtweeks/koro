@@ -35,9 +35,7 @@ module ORO-SEMANTICS-EXTRINSICS
   rule  registerExtrinsics( yseqToK( .Datas ) ) => .
   rule  registerExtrinsics( yseqToK( D, Ds ) ) => registerExtrinsics( D ) ~> registerExtrinsics( yseqToK( Ds ) )
   rule  registerExtrinsics( ymap(|T| M) ) => registerExtrinsics( M )
-        requires  T ==String "?"
-        orBool    T ==String "!"
-        orBool    T ==String "tag:yaml.org,2002:map"
+        requires isGenericMapping( ymap(|T| M) )
   rule  registerExtrinsics( M:Map ~> Rest ) => nonspecResolve(M, nsskeyResolvedInExtrinsicScan) ~> registerResolvedExtrinsic( .Map ) ~> registerExtrinsics( Rest )
   rule  nsskeyResolvedInExtrinsicScan ~> resolvedNonspecKey(R) ~> nonspecResolve(M, Tag) ~> registerResolvedExtrinsic( M':Map ) => nonspecResolve(M, Tag) ~> registerResolvedExtrinsic(M' R)
   rule  registerResolvedExtrinsic( M ) => registerSubr( M )
