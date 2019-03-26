@@ -49,28 +49,28 @@ module ORO-SEMANTICS-VARIABLES
   rule  initialValue( mapping_type ) => ymap(|"?"| .Map)
   rule  initialValue( yamlnode_type ) => yval(|"tag:yaml.org,2002:null"| "")
 
-  rule  enterScope(.VarDecls, _) => .
+  rule  <k>enterScope(.VarDecls, N) => . ...</k>
+        <startup> _ => (N ==Int 0)</startup>
   rule  <k>enterScope((varDecl(Name: (T:OpaqueDataType)),Ds), ScopeBin) => consStoreBin(ScopeBin, !N) ~> enterScope(Ds, ScopeBin) ...</k>
         <env> E => E[Name <- var(T, opaque(!N))] </env>
         <store>... .Map => (!N:Int |-> initialValue(T)) ...</store>
-        <startup> false </startup>
+        requires ScopeBin >Int 0
   rule  <k>enterScope((varDecl(Name: Type),Ds), ScopeBin) => consStoreBin(ScopeBin, !N) ~> enterScope(Ds, ScopeBin) ...</k>
         <env> E => E[Name <- var(Type, bytes(!N, 0))] </env>
         <store>... .Map => (!N:Int |-> initMemory(sizeDataType(Type))) ...</store>
-        <startup> false </startup>
-        requires notBool(isOpaqueType(Type))
+        requires ScopeBin >Int 0 andBool notBool(isOpaqueType(Type))
   rule  <k>enterScope((varDecl(Name: Type),Ds), 0) => enterScope(Ds, 0) ...</k>
         <globals>... Name|->var(T, S) ...</globals>
         <env> E => E[Name <- var(T, S)] </env>
         <startup> true </startup>
   rule  <k>enterScope((varDecl(Name: (T:OpaqueDataType)),Ds), 0) => enterScope(Ds, 0) ...</k>
-        <globals> G </globals>
+        <globals> G => (G  Name|->var(T, opaque(!N))) </globals>
         <env> E => E[Name <- var(T, opaque(!N))] </env>
         <store>... .Map => (!N:Int |-> initialValue(T)) ...</store>
         <startup> true </startup>
         requires notBool(Name in_keys(G))
   rule  <k>enterScope((varDecl(Name: Type),Ds), 0) => enterScope(Ds, 0) ...</k>
-        <globals> G </globals>
+        <globals> G => (G  Name|->var(Type, bytes(!N, 0))) </globals>
         <env> E => E[Name <- var(Type, bytes(!N, 0))] </env>
         <store>... .Map => (!N:Int |-> initMemory(sizeDataType(Type))) ...</store>
         <startup> true </startup>
@@ -85,6 +85,8 @@ module ORO-SEMANTICS-VARIABLES
         <env> _ => E </env>
   rule  <k>exitScope(Bin, E) => killSKeys(SKeys) ...</k>
         <storeBins>... Bin |-> SKeys ...</storeBins>
+        <startup> _ => (Bin ==Int 1)</startup>
+        <env> _ => E </env>
         requires Bin >Int 0
 
   rule  killSKeys( .Ints ) => .
