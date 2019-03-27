@@ -1,0 +1,7 @@
+- Oro/Core/Subroutine/Define:
+  - {argument: fluff, as: string}
+  returning: string
+  as:
+  - Oro/Core/Flow/Label: nowhere
+
+- fluff: "*"
