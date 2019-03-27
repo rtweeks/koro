@@ -7,7 +7,8 @@ module ORO-SEMANTICS-VARIABLES
   General theory, for statement:
   * Create variables at beginning of scope
   * Put statements from "for" at the front of the computation, followed by
-  * A token to dump the variable scope (and leave the identified variable's value as the expression value, when invoked as an expression), followed by
+  * A token to dump the variable scope (and leave the identified variable's
+    value as the expression value, when invoked as an expression), followed by
   * Whatever computation was there after the "define...for"
   */
 
@@ -24,9 +25,23 @@ module ORO-SEMANTICS-VARIABLES
                     | "opaque" "(" Int ")"
   syntax BytesStorage ::= "bytes" "(" Int "," Int ")"
 
-  rule  <k>("Oro/Core/Variable/Define" |-> yseq(|_| Vars) "for" |-> yseq(|_| Stmts)) => resolveTypes(Vars, typeResolvedVar) ~> varScope(.VarDecls : yseqToK(Stmts) ) ...</k>
-  rule  <k>("Oro/Core/Variable/Define" |-> yseq(|_| Vars) "for" |-> yseq(|_| Stmts) "returning value of" |-> _) => resolveTypes(Vars, typeResolvedVar) ~> varScope(.VarDecls : yseqToK(Stmts) ) ...</k>
-  rule  typeResolvedVar ~> D:VarDecl ~> Rest ~> varScope(L : S) => Rest ~> varScope((D,L) : S)
+  rule  <k>(
+          "Oro/Core/Variable/Define" |-> yseq(|_| Vars)
+          "for" |-> yseq(|_| Stmts)
+        ) =>
+          resolveTypes(Vars, typeResolvedVar)
+          ~> varScope(.VarDecls : yseqToK(Stmts) )
+        ...</k>
+  rule  <k>(
+          "Oro/Core/Variable/Define" |-> yseq(|_| Vars)
+          "for" |-> yseq(|_| Stmts)
+          "returning value of" |-> _
+        ) =>
+          resolveTypes(Vars, typeResolvedVar)
+          ~> varScope(.VarDecls : yseqToK(Stmts) )
+        ...</k>
+  rule  typeResolvedVar ~> D:VarDecl ~> Rest ~> varScope(L : S)
+      => Rest ~> varScope((D,L) : S)
 
   /* TODO: Oro/Core/Variable/Define as expression */
 
@@ -34,10 +49,18 @@ module ORO-SEMANTICS-VARIABLES
               | "exitScope" "(" Int "," Map ")"
               | "consStoreBin" "(" Int "," Int ")"
               | "killSKeys" "(" Ints ")"
-  rule  <k>varScope(Decls: Stmts) => enterScope(Decls, 0) ~> Stmts ~> exitScope(0, E) ...</k>
+  rule  <k>varScope(Decls: Stmts)
+          =>  enterScope(Decls, 0)
+              ~> Stmts
+              ~> exitScope(0, E)
+        ...</k>
         <env> E </env>
         <startup> true </startup>
-  rule  <k>varScope(Decls: Stmts) => enterScope(Decls, ScopeBin) ~> Stmts ~> exitScope(ScopeBin, E) ...</k>
+  rule  <k>varScope(Decls: Stmts)
+          =>  enterScope(Decls, ScopeBin)
+              ~> Stmts
+              ~> exitScope(ScopeBin, E)
+        ...</k>
         <scopeBin> ScopeBin => ScopeBin +Int 1 </scopeBin>
         <storeBins>... .Map => (ScopeBin |-> .Ints) ...</storeBins>
         <env> E </env>
@@ -51,11 +74,17 @@ module ORO-SEMANTICS-VARIABLES
 
   rule  <k>enterScope(.VarDecls, N) => . ...</k>
         <startup> _ => (N ==Int 0)</startup>
-  rule  <k>enterScope((varDecl(Name: (T:OpaqueDataType)),Ds), ScopeBin) => consStoreBin(ScopeBin, !N) ~> enterScope(Ds, ScopeBin) ...</k>
+  rule  <k>enterScope((varDecl(Name: (T:OpaqueDataType)),Ds), ScopeBin)
+          =>  consStoreBin(ScopeBin, !N)
+              ~> enterScope(Ds, ScopeBin)
+        ...</k>
         <env> E => E[Name <- var(T, opaque(!N))] </env>
         <store>... .Map => (!N:Int |-> initialValue(T)) ...</store>
         requires ScopeBin >Int 0
-  rule  <k>enterScope((varDecl(Name: Type),Ds), ScopeBin) => consStoreBin(ScopeBin, !N) ~> enterScope(Ds, ScopeBin) ...</k>
+  rule  <k>enterScope((varDecl(Name: Type),Ds), ScopeBin)
+          =>  consStoreBin(ScopeBin, !N)
+              ~> enterScope(Ds, ScopeBin)
+        ...</k>
         <env> E => E[Name <- var(Type, bytes(!N, 0))] </env>
         <store>... .Map => (!N:Int |-> initMemory(sizeDataType(Type))) ...</store>
         requires ScopeBin >Int 0 andBool notBool(isOpaqueType(Type))

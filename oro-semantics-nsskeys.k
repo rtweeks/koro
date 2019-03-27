@@ -21,10 +21,22 @@ module ORO-SEMANTICS-NSSKEYS
   rule  someTag ~> resolvedNonspecKey(R) ~> nonspecResolve(M, Tag) ~> M':Map => nonspecResolve(M, Tag) ~> (M' R)
   */
   rule  nonspecResolve(.Map, _) => .
-  rule  nonspecResolve(M, Tag) => nonspecResolveKey ~> choice(M) ~> nonspecResolve(M, Tag)
+  rule  nonspecResolve(M, Tag)
+      =>  nonspecResolveKey
+          ~> choice(M)
+          ~> nonspecResolve(M, Tag)
         requires size(M) >Int 0
-  rule  nonspecResolveKey ~> yval(|"?"| K) ~> nonspecResolve(M, Tag) => Tag ~> resolvedNonspecKey(K |-> M[yval(|"?"| K)]) ~> nonspecResolve(M[yval(|"?"| K) <- undef], Tag)
-  rule  nonspecResolveKey ~> yval(|T| K) ~> nonspecResolve(M, Tag) => Tag ~> resolvedNonspecKey(yval(|T| K) |-> M[yval(|T| K)]) ~> nonspecResolve(M[yval(|T| K) <- undef], Tag)
+  rule  nonspecResolveKey ~> yval(|"?"| K) ~> nonspecResolve(M, Tag)
+      =>  Tag
+          ~> resolvedNonspecKey(K |-> M[yval(|"?"| K)])
+          ~> nonspecResolve(M[yval(|"?"| K) <- undef], Tag)
+  rule  nonspecResolveKey ~> yval(|T| K) ~> nonspecResolve(M, Tag)
+      =>  Tag
+          ~> resolvedNonspecKey(yval(|T| K) |-> M[yval(|T| K)])
+          ~> nonspecResolve(M[yval(|T| K) <- undef], Tag)
         requires T =/=String "?"
-  rule  nonspecResolveKey ~> K:FixedTypeData ~> nonspecResolve(M, Tag) => Tag ~> resolvedNonspecKey(K |-> M[K]) ~> nonspecResolve(M[K <- undef], Tag)
+  rule  nonspecResolveKey ~> K:FixedTypeData ~> nonspecResolve(M, Tag)
+      =>  Tag
+          ~> resolvedNonspecKey(K |-> M[K])
+          ~> nonspecResolve(M[K <- undef], Tag)
 endmodule

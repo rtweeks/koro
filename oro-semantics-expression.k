@@ -13,24 +13,32 @@ module ORO-SEMANTICS-EXPRESSION
 
   // Literal values
   rule  evaluate(string_type : S:String, Tag ) => Tag ~> S
-  rule  evaluate(string_type : yval(|"tag:yaml.org,2002:str"| S), Tag) => evaluate(string_type : S, Tag)
+  rule  evaluate(string_type : yval(|"tag:yaml.org,2002:str"| S), Tag)
+      =>  evaluate(string_type : S, Tag)
   rule  evaluate(bool_type : yval(|ST| V), Tag) => Tag ~> true
         requires ST in (SetItem("?") SetItem("tag:yaml.org,2002:bool"))
         andBool V in (SetItem("true") SetItem("True") SetItem("TRUE"))
   rule  evaluate(bool_type : yval(|ST| V), Tag) => Tag ~> false
         requires ST in (SetItem("?") SetItem("tag:yaml.org,2002:bool"))
         andBool V in (SetItem("false") SetItem("False") SetItem("FALSE"))
-  rule  evaluate(int_type(unsigned Bits) : yval(|"?"| ValStr), Tag) => Tag ~> mi(Bits, String2Int(ValStr))
+  rule  evaluate(int_type(unsigned Bits) : yval(|"?"| ValStr), Tag)
+      =>  Tag ~> mi(Bits, String2Int(ValStr))
         requires notBool uoverflowMInt(Bits, String2Int(ValStr))
-  rule  evaluate(int_type(unsigned Bits) : yval(|"tag:yaml.org,2002:int"| ValStr), Tag) => Tag ~> mi(Bits, String2Int(ValStr))
+  rule  evaluate(int_type(unsigned Bits) : yval(|"tag:yaml.org,2002:int"| ValStr), Tag)
+      =>  Tag ~> mi(Bits, String2Int(ValStr))
         requires notBool uoverflowMInt(Bits, String2Int(ValStr))
-  rule  evaluate(int_type(signed Bits) : yval(|"?"| ValStr), Tag) => Tag ~> mi(Bits, String2Int(ValStr))
+  rule  evaluate(int_type(signed Bits) : yval(|"?"| ValStr), Tag)
+      => Tag ~> mi(Bits, String2Int(ValStr))
         requires notBool soverflowMInt(Bits, String2Int(ValStr))
-  rule  evaluate(int_type(signed Bits) : yval(|"tag:yaml.org,2002:int"| ValStr), Tag) => Tag ~> mi(Bits, String2Int(ValStr))
+  rule  evaluate(int_type(signed Bits) : yval(|"tag:yaml.org,2002:int"| ValStr), Tag)
+      => Tag ~> mi(Bits, String2Int(ValStr))
         requires notBool soverflowMInt(Bits, String2Int(ValStr))
-  rule  evaluate(float_type(_) : yval(|"?"| ValStr), Tag) => Tag ~> String2Float(ValStr)
-  rule  evaluate(float_type(_) : yval(|"tag:yaml.org,2002:int"| ValStr), Tag) => Tag ~> String2Float(ValStr)
-  rule  evaluate(float_type(_) : yval(|"tag:yaml.org,2002:float"| ValStr), Tag) => Tag ~> String2Float(ValStr)
+  rule  evaluate(float_type(_) : yval(|"?"| ValStr), Tag)
+      => Tag ~> String2Float(ValStr)
+  rule  evaluate(float_type(_) : yval(|"tag:yaml.org,2002:int"| ValStr), Tag)
+      => Tag ~> String2Float(ValStr)
+  rule  evaluate(float_type(_) : yval(|"tag:yaml.org,2002:float"| ValStr), Tag)
+      => Tag ~> String2Float(ValStr)
   rule  evaluate(yamlnode_type : S:String, Tag) => Tag ~> S
   rule  evaluate(yamlnode_type : yval(|T| S), Tag ) => Tag ~> yval(|T| S)
         requires notBool isScalarExprTag(T)
@@ -40,7 +48,9 @@ module ORO-SEMANTICS-EXPRESSION
         <env>... VarName |-> var(T, opaque(StoreLoc)) ...</env>
         <store>... StoreLoc |-> VarVal ...</store>
         requires isScalarExprTag(ST)
-  rule  <k>evaluate(int_type(Signedness Bits) : yval(|ST| VarName), Tag) => extractBytesVal(int_type(Signedness Bits), Content, Offset, Tag) ...</k>
+  rule  <k>evaluate(int_type(Signedness Bits) : yval(|ST| VarName), Tag)
+          => extractBytesVal(int_type(Signedness Bits), Content, Offset, Tag)
+        ...</k>
         <env>... VarName |-> var(T, bytes(StoreLoc, Offset)) ...</env>
         <store>... StoreLoc |-> memory(Content / Length) ...</store>
         requires isScalarExprTag(ST)
@@ -48,7 +58,9 @@ module ORO-SEMANTICS-EXPRESSION
         <env>... VarName |-> var(T, opaque(StoreLoc)) ...</env>
         <store>... StoreLoc |-> VarVal ...</store>
         requires notBool isGenericMapping(VarName)
-  rule  <k>evaluate(T : (VarName:FixedTypeData), Tag) => extractBytesVal(T, Content, Offset, Tag) ...</k>
+  rule  <k>evaluate(T : (VarName:FixedTypeData), Tag)
+          => extractBytesVal(T, Content, Offset, Tag)
+        ...</k>
         <env>... VarName |-> var(T, bytes(StoreLoc, Offset)) ...</env>
         <store>... StoreLoc |-> memory(Content / Length) ...</store>
         requires notBool isGenericMapping(VarName)

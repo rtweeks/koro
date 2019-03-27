@@ -33,11 +33,21 @@ module ORO-SEMANTICS-EXTRINSICS
 
   rule  registerExtrinsics( . ) => .
   rule  registerExtrinsics( yseqToK( .Datas ) ) => .
-  rule  registerExtrinsics( yseqToK( D, Ds ) ) => registerExtrinsics( D ) ~> registerExtrinsics( yseqToK( Ds ) )
+  rule  registerExtrinsics( yseqToK( D, Ds ) ) =>
+          registerExtrinsics( D )
+          ~> registerExtrinsics( yseqToK( Ds ) )
   rule  registerExtrinsics( ymap(|T| M) ) => registerExtrinsics( M )
         requires isGenericMapping( ymap(|T| M) )
-  rule  registerExtrinsics( M:Map ~> Rest ) => nonspecResolve(M, nsskeyResolvedInExtrinsicScan) ~> registerResolvedExtrinsic( .Map ) ~> registerExtrinsics( Rest )
-  rule  nsskeyResolvedInExtrinsicScan ~> resolvedNonspecKey(R) ~> nonspecResolve(M, Tag) ~> registerResolvedExtrinsic( M':Map ) => nonspecResolve(M, Tag) ~> registerResolvedExtrinsic(M' R)
+  rule  registerExtrinsics( M:Map ~> Rest ) =>
+          nonspecResolve(M, nsskeyResolvedInExtrinsicScan)
+          ~> registerResolvedExtrinsic( .Map )
+          ~> registerExtrinsics( Rest )
+  rule  nsskeyResolvedInExtrinsicScan
+        ~> resolvedNonspecKey(R)
+        ~> nonspecResolve(M, Tag)
+        ~> registerResolvedExtrinsic( M':Map )
+      =>  nonspecResolve(M, Tag)
+          ~> registerResolvedExtrinsic(M' R)
   rule  registerResolvedExtrinsic( M ) => registerSubr( M )
         requires  keys(M) in SetItem(skeysDefineSubr)
   rule  registerResolvedExtrinsic( M ) => registerFun( M )
@@ -57,20 +67,49 @@ module ORO-SEMANTICS-EXTRINSICS
           (keys(M) in SetItem(skeysUseMacros))
         )
 
-  rule  <k>registerSubr( ("Oro/Core/Subroutine/Define" |-> yseq( | _ | Args )) ("as" |-> yseq( | _ | Body)) ) => resolveTypes(Args, subrAccumArg) ~> subroutine(.VarDecls ; E ; XS : yseqToK( Body )) ...</k>
+  rule  <k>registerSubr(
+          ("Oro/Core/Subroutine/Define" |-> yseq( | _ | Args ))
+          ("as" |-> yseq( | _ | Body))
+        ) =>
+          resolveTypes(Args, subrAccumArg)
+          ~> subroutine(.VarDecls ; E ; XS : yseqToK( Body ))
+        ...</k>
         <env> E </env>
         <extrinsics> XS </extrinsics>
-  rule  subrAccumArg ~> D:VarDecl ~> Rest ~> subroutine(Args; E; XS : Body) => Rest ~> subroutine((D,Args); E; XS : Body)
+  rule  subrAccumArg
+        ~> D:VarDecl
+        ~> Rest
+        ~> subroutine(Args; E; XS : Body)
+      =>  Rest ~> subroutine((D,Args); E; XS : Body)
   rule  <k>subroutine(Args; E; XS : Body) => . ...</k>
         <extrinsics>... .Map => varNames(Args) |-> subroutine( Args; E; XS : Body )</extrinsics>
         // TODO: requires notOverridingIntrinsic(Args)
-  rule  <k>registerFun( ("Oro/Core/Subroutine/Define" |-> yseq( | _ | Args)) ("returning" |-> RetType:String) ("as" |-> yseq( | _ | Body)) ) => resolveTypes(Args, subrAccumArg) ~> function(.VarDecls -> RetType; E; XS : yseqToK(Body)) ...</k>
+  rule  <k>registerFun(
+          ("Oro/Core/Subroutine/Define" |-> yseq( | _ | Args))
+          ("returning" |-> RetType:String)
+          ("as" |-> yseq( | _ | Body))
+        ) =>
+          resolveTypes(Args, subrAccumArg)
+          ~> function(.VarDecls -> RetType; E; XS : yseqToK(Body))
+        ...</k>
         <env> E </env>
         <extrinsics> XS </extrinsics>
-  rule  <k>registerFun( ("Oro/Core/Subroutine/Define" |-> yseq( | _ | Args)) ("returning" |-> yval(|"?"| RetType)) ("as" |-> yseq( | _ | Body)) ) => resolveTypes(Args, subrAccumArg) ~> function(.VarDecls -> RetType; E; XS : yseqToK(Body)) ...</k>
+  rule  <k>registerFun(
+          ("Oro/Core/Subroutine/Define" |-> yseq( | _ | Args))
+          ("returning" |-> yval(|"?"| RetType))
+          ("as" |-> yseq( | _ | Body))
+        ) =>
+          resolveTypes(Args, subrAccumArg)
+          ~> function(.VarDecls -> RetType; E; XS : yseqToK(Body))
+        ...</k>
         <env> E </env>
         <extrinsics> XS </extrinsics>
-  rule  subrAccumArg ~> D:VarDecl ~> Rest ~> function(Args -> RetType; E; XS : Body) => Rest ~> function((D,Args) -> RetType; E; XS : Body)
+  rule  subrAccumArg
+        ~> D:VarDecl
+        ~> Rest
+        ~> function(Args -> RetType; E; XS : Body)
+      =>  Rest
+          ~> function((D,Args) -> RetType; E; XS : Body)
   rule  <k>function(Args -> RetType; E; XS : Body) => . ...</k>
         <extrinsics>... .Map => varNames(Args) |-> function( Args -> RetType; E; XS : Body )</extrinsics>
         // TODO: requires notOverridingIntrinsic(Args)
@@ -88,18 +127,30 @@ module ORO-SEMANTICS-EXTRINSICS
               | "actualArg" "(" Data ")"
   syntax ArgEval  ::= "evalArg" "(" Data ":" DataType "<-" K ")"
   syntax ArgEvals ::= List{ArgEval, ","}
-  rule  <k> Call:Map => generateArgEvalPlan(Args, Call) ~> evaluateArgs(.ArgEvals) ~> executeSubroutine(Args, .Map, E, XS, Body) ...</k>
+  rule  <k> Call:Map =>
+          generateArgEvalPlan(Args, Call)
+          ~> evaluateArgs(.ArgEvals)
+          ~> executeSubroutine(Args, .Map, E, XS, Body)
+        ...</k>
         <extrinsics>... keys(Call) |-> subroutine(Args; E; XS : Body) ...</extrinsics>
   //rule  <k> Call:Map => generateArgEvalPlan(Args, Call) ~> evaluateArgs(.ArgEvals) ~> executeSubroutine((varDecl("result" : RetType),Args), .Map, E, XS, Body) ...</k>
   //      <extrinsics>... keys(Call) |-> function(Args -> RetType; E; XS : Body) ...</extrinsics>
 
   rule  generateArgEvalPlan(.VarDecls, _) => .
-  rule  generateArgEvalPlan((varDecl(Name : Type),VDs), Call) ~> evaluateArgs(AEs) => generateArgEvalPlan(VDs, Call) ~> evaluateArgs(evalArg(Name : Type <- Call[Name] ),AEs)
+  rule  generateArgEvalPlan((varDecl(Name : Type),VDs), Call)
+        ~> evaluateArgs(AEs)
+      =>  generateArgEvalPlan(VDs, Call)
+          ~> evaluateArgs(evalArg(Name : Type <- Call[Name] ),AEs)
 
   rule  evaluateArgs(.ArgEvals) => .
   rule  evaluateArgs(AE,AEs) => AE ~> evaluateArgs(AEs)
   rule  evalArg(N : T <- Expr) => evaluate(T : Expr, actualArg(N))
-  rule  actualArg(N) ~> V:Data ~> Rest ~> executeSubroutine(Args, ArgVals, E, XS, Body) => Rest ~> executeSubroutine(Args, ArgVals[N <- V], E, XS, Body)
+  rule  actualArg(N)
+        ~> V:Data
+        ~> Rest
+        ~> executeSubroutine(Args, ArgVals, E, XS, Body)
+      =>  Rest
+          ~> executeSubroutine(Args, ArgVals[N <- V], E, XS, Body)
 
   /*
     --- What does subroutine execution look like (once we have values to assign each argument)? ---

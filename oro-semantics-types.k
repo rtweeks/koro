@@ -38,32 +38,47 @@ module ORO-SEMANTICS-TYPES
   syntax VarDecls ::= List{VarDecl, ","}
 
   rule  resolveTypes(.Datas, _) => .
-  rule  resolveTypes((ymap(|_| VarInfo),Rest), Tag) => nonspecResolve(VarInfo, varDefEntry) ~> varDefMap(.Map) ~> resolveTypes(Rest, Tag)
-  rule  varDefEntry ~> resolvedNonspecKey(R) ~> Rest ~> varDefMap(M) => Rest ~> varDefMap(M R)
-  rule  varDefMap("variable" |-> Var "as" |-> Type) => resolveTypeEntry ~> Var ~> Type
-  rule  varDefMap("argument" |-> Var "as" |-> Type) => resolveTypeEntry ~> Var ~> Type
+  rule  resolveTypes((ymap(|_| VarInfo),Rest), Tag)
+      =>  nonspecResolve(VarInfo, varDefEntry)
+          ~> varDefMap(.Map)
+          ~> resolveTypes(Rest, Tag)
+  rule  varDefEntry ~> resolvedNonspecKey(R) ~> Rest ~> varDefMap(M)
+      => Rest ~> varDefMap(M R)
+  rule  varDefMap("variable" |-> Var "as" |-> Type)
+      => resolveTypeEntry ~> Var ~> Type
+  rule  varDefMap("argument" |-> Var "as" |-> Type)
+      => resolveTypeEntry ~> Var ~> Type
 
-  rule  resolveTypeEntry ~> yval(|"?"| Var) ~> yval(|"?"| Type) => normalizeType ~> Type ~> Var
-  rule  resolveTypeEntry ~> yval(|VT| Var) ~> yval(|"?"| Type) => normalizeType ~> Type ~> yval(|VT| Var)
+  rule  resolveTypeEntry ~> yval(|"?"| Var) ~> yval(|"?"| Type)
+      => normalizeType ~> Type ~> Var
+  rule  resolveTypeEntry ~> yval(|VT| Var) ~> yval(|"?"| Type)
+      => normalizeType ~> Type ~> yval(|VT| Var)
         requires (VT =/=String "?")
         andBool  (VT =/=String "!expr")
         andBool  (VT =/=String "tag:the-oro-project.com,2010:expr")
-  rule  resolveTypeEntry ~> Var:FixedTypeData ~> yval(|"?"| Type) => normalizeType ~> Type ~> Var
-  rule  resolveTypeEntry ~> yval(|"?"| Var) ~> yval(|T| Type) => normalizeType ~> yval(|T| Type) ~> Var
+  rule  resolveTypeEntry ~> Var:FixedTypeData ~> yval(|"?"| Type)
+      => normalizeType ~> Type ~> Var
+  rule  resolveTypeEntry ~> yval(|"?"| Var) ~> yval(|T| Type)
+      => normalizeType ~> yval(|T| Type) ~> Var
         requires T =/=String "?"
-  rule  resolveTypeEntry ~> yval(|VT| Var) ~> yval(|T| Type) => normalizeType ~> yval(|T| Type) ~> yval(|VT| Var)
+  rule  resolveTypeEntry ~> yval(|VT| Var) ~> yval(|T| Type)
+      => normalizeType ~> yval(|T| Type) ~> yval(|VT| Var)
         requires (T =/=String "?")
         andBool (VT =/=String "?")
         andBool  (VT =/=String "!expr")
         andBool  (VT =/=String "tag:the-oro-project.com,2010:expr")
-  rule  resolveTypeEntry ~> Var:FixedTypeData ~> yval(|T| Type) => normalizeType ~> yval(|T| Type) ~> Var
+  rule  resolveTypeEntry ~> Var:FixedTypeData ~> yval(|T| Type)
+      => normalizeType ~> yval(|T| Type) ~> Var
         requires T =/=String "?"
-  rule  resolveTypeEntry ~> yval(|"?"| Var) ~> Type:FixedTypeData => normalizeType ~> Type ~> Var
-  rule  resolveTypeEntry ~> yval(|VT| Var) ~> Type:FixedTypeData => normalizeType ~> Type ~> yval(|VT| Var)
+  rule  resolveTypeEntry ~> yval(|"?"| Var) ~> Type:FixedTypeData
+      => normalizeType ~> Type ~> Var
+  rule  resolveTypeEntry ~> yval(|VT| Var) ~> Type:FixedTypeData
+      => normalizeType ~> Type ~> yval(|VT| Var)
         requires (VT =/=String "?")
         andBool  (VT =/=String "!expr")
         andBool  (VT =/=String "tag:the-oro-project.com,2010:expr")
-  rule  resolveTypeEntry ~> Var:FixedTypeData ~> Type:FixedTypeData => normalizeType ~> Type ~> Var
+  rule  resolveTypeEntry ~> Var:FixedTypeData ~> Type:FixedTypeData
+      => normalizeType ~> Type ~> Var
 
   rule  normalizeType ~> "boolean" => bool_type
 
@@ -97,9 +112,11 @@ module ORO-SEMANTICS-TYPES
   rule  normalizeType ~> "memory address" => memaddr_type
 
   // TODO: Support all integer formats for tag:yaml.org,2002:int
-  rule  normalizeType ~> ymap(|_| "memory buffer" |-> yval(|T| Size)) => buffer_type(String2Int(Size))
+  rule  normalizeType ~> ymap(|_| "memory buffer" |-> yval(|T| Size))
+      => buffer_type(String2Int(Size))
         requires T in (SetItem("?") SetItem("tag:yaml.org,2002:int"))
-  rule  normalizeType ~> ymap(|_| yval(|"?"| "memory buffer") |-> yval(|T| Size)) => buffer_type(String2Int(Size))
+  rule  normalizeType ~> ymap(|_| yval(|"?"| "memory buffer") |-> yval(|T| Size))
+      => buffer_type(String2Int(Size))
         requires T in (SetItem("?") SetItem("tag:yaml.org,2002:int"))
 
   // TODO: ymap(|_| "abstract subroutine" |-> ymap(|_| Keys))
@@ -110,11 +127,13 @@ module ORO-SEMANTICS-TYPES
   rule  normalizeType ~> "YAML node" => yamlnode_type
 
   // TODO: Requires Var not tagged as expr if scalar, not tagged ! or tag:yaml.org,2002:map if mapping
-  rule  Type:DataType ~> Var:Data ~> resolveTypes(L, Tag) => Tag ~> varDecl(Var : Type) ~> resolveTypes(L, Tag)
+  rule  Type:DataType ~> Var:Data ~> resolveTypes(L, Tag)
+      => Tag ~> varDecl(Var : Type) ~> resolveTypes(L, Tag)
 
   rule  varNames(L) => varNamesAccum(L -> .Set)
   rule  varNamesAccum(.VarDecls -> S) => S
-  rule  varNamesAccum((varDecl(Name: _),Ds) -> S) => varNamesAccum(Ds -> (S SetItem(Name)))
+  rule  varNamesAccum((varDecl(Name: _),Ds) -> S)
+      => varNamesAccum(Ds -> (S SetItem(Name)))
 
   syntax Bool ::= "isOpaqueType" "(" DataType ")"         [function]
   rule  isOpaqueType(T:OpaqueDataType) => true
@@ -127,5 +146,6 @@ module ORO-SEMANTICS-TYPES
   rule  sizeDataType( float_type( Bits ) ) => ((Bits +Int 7) /Int 8)
   rule  sizeDataType( buffer_type( Bytes ) ) => Bytes
 
-  rule  extractBytesVal(T, Content, Offset, Tag) => Tag ~> extractMInt(Content, Offset, sizeDataType(T))
+  rule  extractBytesVal(T, Content, Offset, Tag)
+      => Tag ~> extractMInt(Content, Offset, sizeDataType(T))
 endmodule
