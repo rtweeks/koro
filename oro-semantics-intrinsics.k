@@ -11,6 +11,8 @@ module ORO-SEMANTICS-INTRINSICS
                 | "skeysUseMacros"                [function]
                 | "skeysLabel"                    [function]
                 | "skeysDo"                       [function]
+                | "skeysDefineVar"                [function]
+                | "skeysDefineVarRet"             [function]
   syntax Bool ::= "oroIsIntrinsic" "(" Map ")"    [function]
 
   rule setFromList( .List ) => .Set
@@ -38,6 +40,16 @@ module ORO-SEMANTICS-INTRINSICS
 
   rule skeysDo => SetItem("Oro/Core/Flow/Do")
 
+  rule skeysDefineVar => (
+    SetItem("Oro/Core/Variable/Define")
+    SetItem("for")
+  )
+
+  rule skeysDefineVarRet => (
+    skeysDefineVar
+    SetItem("returning value of")
+  )
+
   rule oroIntrinsics => (
     // Program flow
     SetItem( skeysLabel )
@@ -46,8 +58,8 @@ module ORO-SEMANTICS-INTRINSICS
     SetItem( skeysDo ) /* NOT a loop */
 
     // Variables
-    SetItem( SetItem("Oro/Core/Variable/Define") SetItem("for") )
-    SetItem( SetItem("Oro/Core/Variable/Define") SetItem("for") SetItem("returning value of"))
+    SetItem( skeysDefineVar )
+    SetItem( skeysDefineVarRet )
     SetItem( SetItem("Oro/Core/Variable/Address of") )
 
     // Subroutines
