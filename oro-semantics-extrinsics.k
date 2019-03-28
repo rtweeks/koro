@@ -167,9 +167,9 @@ module ORO-SEMANTICS-EXTRINSICS
   rule  <k> Call:Map =>
           generateArgEvalPlan(Args, Call)
           ~> evaluateArgs(.ArgEvals)
-          ~> executeSubroutine(Args, .Map, E, XS, Body)
+          ~> executeSubroutine((varDecl("result" : RetType), Args), .Map, E, XS, Body)
         ...</k>
-        <extrinsics>... keys(Call) |-> subroutine-returning(Args -> _; E; XS : Body) ...</extrinsics>
+        <extrinsics>... keys(Call) |-> subroutine-returning(Args -> RetType; E; XS : Body) ...</extrinsics>
 
   rule  generateArgEvalPlan(.VarDecls, _) => .
   rule  generateArgEvalPlan((varDecl(Name : Type),VDs), Call)
