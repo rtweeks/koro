@@ -34,6 +34,7 @@ module ORO-SEMANTICS-TYPES
                 | "varNamesAccum" "(" VarDecls "->" Set ")"   [function]
   syntax Int  ::= "sizeDataType" "(" DataType ")"             [function]
   syntax MInt ::= "extractBytesVal" "(" DataType "," MInt "," Int "," K ")" [function]
+  syntax Bool ::= "typeConversionAllowed" "(" DataType "->" DataType ")"    [function]
 
   syntax VarDecl ::= "varDecl" "(" Data ":" DataType ")"
   syntax VarDecls ::= List{VarDecl, ","}
