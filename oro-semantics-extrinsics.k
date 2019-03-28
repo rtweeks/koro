@@ -56,7 +56,35 @@ module ORO-SEMANTICS-EXTRINSICS
         requires  keys(M) in SetItem(skeysImportFrom)
   rule  registerResolvedExtrinsic( M ) => loadMacros( M )
         requires  keys(M) in SetItem(skeysUseMacros)
-  rule  registerResolvedExtrinsic( M ) => .
+  syntax K  ::= "extrinsicRegistrationWithVars"
+  rule  <k>registerResolvedExtrinsic( M:Map )
+          =>  extrinsicRegistrationWithVars
+              ~> M["Oro/Core/Variable/Define"]
+              ~> M["for"]
+        ...</k>
+        <startup> true </startup>
+        requires (
+          (keys(M) in SetItem(skeysDefineVar))
+          orBool
+          (keys(M) in SetItem(skeysDefineVarRet))
+        )
+  rule  extrinsicRegistrationWithVars ~> Vars:YamlSeq ~> yseq(|_| StmtsList)
+      =>  resolveTypes(datasOfYseq(Vars), typeResolvedVar)
+          ~> varScope(.VarDecls : registerExtrinsics( yseqToK( StmtsList ) ))
+  syntax K  ::= "extrinsicRegistrationSkipVars"
+  rule  <k>registerResolvedExtrinsic( M:Map )
+          =>  extrinsicRegistrationSkipVars
+              ~> M["for"]
+        ...</k>
+        <startup> false </startup>
+        requires (
+          (keys(M) in SetItem(skeysDefineVar))
+          orBool
+          (keys(M) in SetItem(skeysDefineVarRet))
+        )
+  rule  extrinsicRegistrationSkipVars ~> yseq(|_| StmtsList)
+      => registerExtrinsics( yseqToK( StmtsList) )
+  rule  registerResolvedExtrinsic( M:Map ) => .
         requires notBool(
           (keys(M) in SetItem(skeysDefineSubr))
           orBool
@@ -65,6 +93,10 @@ module ORO-SEMANTICS-EXTRINSICS
           (keys(M) in SetItem(skeysImportFrom))
           orBool
           (keys(M) in SetItem(skeysUseMacros))
+          orBool
+          (keys(M) in SetItem(skeysDefineVar))
+          orBool
+          (keys(M) in SetItem(skeysDefineVarRet))
         )
 
   rule  <k>registerSubr(
