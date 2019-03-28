@@ -155,6 +155,7 @@ module ORO-SEMANTICS-EXTRINSICS
   syntax K  ::= "generateArgEvalPlan" "(" VarDecls "," Map ")"
               | "evaluateArgs" "(" ArgEvals ")"
               | "executeSubroutine" "(" VarDecls "," Map /* argVals */ "," Map /* env */ "," Map /* extrinsics */ "," K /* body */ ")"
+              | "executeReturningSubroutine" "(" VarDecls "," Map /* argVals */ "," Map /* env */ "," Map /* extrinsics */ "," K /* body */ "," K /* continuation tag */ ")"
               | "actualArg" "(" Data ")"
   syntax ArgEval  ::= "evalArg" "(" Data ":" DataType "<-" K ")"
   syntax ArgEvals ::= List{ArgEval, ","}
@@ -170,6 +171,14 @@ module ORO-SEMANTICS-EXTRINSICS
           ~> executeSubroutine((varDecl("result" : RetType), Args), .Map, E, XS, Body)
         ...</k>
         <extrinsics>... keys(Call) |-> subroutine-returning(Args -> RetType; E; XS : Body) ...</extrinsics>
+
+  rule  <k> evaluate(T : (Call:Map), Tag ) =>
+          generateArgEvalPlan(Args, Call)
+          ~> evaluateArgs(.ArgEvals)
+          ~> executeReturningSubroutine((varDecl("result" : T'), Args), .Map, E, XS, Body, Tag)
+        ...</k>
+        <extrinsics>... keys(Call) |-> subroutine-returning(Args -> T'; E; XS : Body) ...</extrinsics>
+        requires typeConversionAllowed(T' -> T)
 
   rule  generateArgEvalPlan(.VarDecls, _) => .
   rule  generateArgEvalPlan((varDecl(Name : Type),VDs), Call)
@@ -217,6 +226,25 @@ module ORO-SEMANTICS-EXTRINSICS
         <extrinsics> XS </extrinsics>
         <labels> L </labels>
 
+  syntax K  ::= "captureSubroutineResult" "(" K ")"
+  rule  <k>executeReturningSubroutine(Args, ArgVals, E', XS', Body, Tag) =>
+            enterSubroutine(XS', E')
+            ~> registerExtrinsics(Body)
+            ~> enterScope(Args, ScopeBin)
+            ~> assignArguments(ArgVals)
+            ~> Body
+            ~> captureSubroutineResult(
+              exitScope(ScopeBin, E)
+              ~> exitSubroutine(XS, L)
+              ~> Tag
+            )
+        ...</k>
+        <scopeBin> ScopeBin => ScopeBin +Int 1 </scopeBin>
+        <storeBins>... .Map => (ScopeBin |-> .Ints) ...</storeBins>
+        <env> E </env>
+        <extrinsics> XS </extrinsics>
+        <labels> L </labels>
+
   rule  <k>enterSubroutine( XS, E ) => . ...</k>
         <env> _ => E </env>
         <extrinsics> _ => XS </extrinsics>
@@ -233,4 +261,9 @@ module ORO-SEMANTICS-EXTRINSICS
   rule  <k>exitSubroutine(XS, L) => . ...</k>
         <extrinsics> _ => XS </extrinsics>
         <labels> _ => L </labels>
+
+  rule  <k>captureSubroutineResult(CloseScope) => CloseScope ~> RetVal ...</k>
+        <env>... "result" |-> var(_, opaque(L)) ...</env>
+        <store>... L |-> RetVal ...</store>
+  /* TODO: Handle <env>... "result" |-> var(_, bytes(L, 0)) ...</env> */
 endmodule
