@@ -17,6 +17,7 @@ module ORO-SEMANTICS-VARIABLES
               | "typeResolvedVar"
               | Variable
   syntax Variable ::= "var" "(" DataType "," Storage ")"
+  syntax VarValue ::= Data
                     | "initialValue" "(" OpaqueDataType ")"       [function]
 
   // An "opaque" storage just references the key for accessing <store>
@@ -26,15 +27,15 @@ module ORO-SEMANTICS-VARIABLES
   syntax BytesStorage ::= "bytes" "(" Int "," Int ")"
 
   rule  <k>(
-          "Oro/Core/Variable/Define" |-> yseq(|_| Vars)
-          "for" |-> yseq(|_| Stmts)
+          "Oro/Core/Variable/Define" |-> [ Vars ]
+          "for" |-> [ Stmts ]
         ) =>
           resolveTypes(Vars, typeResolvedVar)
           ~> varScope(.VarDecls : yseqToK(Stmts) )
         ...</k>
   rule  <k>(
-          "Oro/Core/Variable/Define" |-> yseq(|_| Vars)
-          "for" |-> yseq(|_| Stmts)
+          "Oro/Core/Variable/Define" |-> [ Vars ]
+          "for" |-> [ Stmts ]
           "returning value of" |-> _
         ) =>
           resolveTypes(Vars, typeResolvedVar)
@@ -68,8 +69,8 @@ module ORO-SEMANTICS-VARIABLES
 
   rule  initialValue( memaddr_type ) => invalidPointer
   rule  initialValue( string_type ) => ""
-  rule  initialValue( sequence_type ) => yseq(|"?"| .Datas)
-  rule  initialValue( mapping_type ) => ymap(|"?"| .Map)
+  rule  initialValue( sequence_type ) => [ .Datas ]
+  rule  initialValue( mapping_type ) => .Map
   rule  initialValue( yamlnode_type ) => yval(|"tag:yaml.org,2002:null"| "")
 
   rule  <k>enterScope(.VarDecls, N) => . ...</k>
@@ -92,18 +93,34 @@ module ORO-SEMANTICS-VARIABLES
         <globals>... Name|->var(T, S) ...</globals>
         <env> E => E[Name <- var(T, S)] </env>
         <startup> true </startup>
-  rule  <k>enterScope((varDecl(Name: (T:OpaqueDataType)),Ds), 0) => enterScope(Ds, 0) ...</k>
-        <globals> G => (G  Name|->var(T, opaque(!N))) </globals>
-        <env> E => E[Name <- var(T, opaque(!N))] </env>
-        <store>... .Map => (!N:Int |-> initialValue(T)) ...</store>
+  syntax K  ::= "addGlobal" "(" Data /* name */ "," Variable "," Map /* store entry */ "," K /* continuation */ ")"
+  rule  <k>enterScope((varDecl(Name: (T:OpaqueDataType)),Ds), 0)
+          => addGlobal(
+            Name,
+            var(T, opaque(!N)),
+            (!N:Int |-> initialValue(T)),
+            enterScope(Ds, 0)
+          )
+        ...</k>
+        <globals> G </globals>
         <startup> true </startup>
-        requires notBool(Name in_keys(G))
-  rule  <k>enterScope((varDecl(Name: Type),Ds), 0) => enterScope(Ds, 0) ...</k>
-        <globals> G => (G  Name|->var(Type, bytes(!N, 0))) </globals>
-        <env> E => E[Name <- var(Type, bytes(!N, 0))] </env>
-        <store>... .Map => (!N:Int |-> initMemory(sizeDataType(Type))) ...</store>
+        requires notBool(Name in keys(G))
+  rule  <k>enterScope((varDecl(Name: Type),Ds), 0)
+          => addGlobal(
+            Name,
+            var(Type, bytes(!N, 0)),
+            (!N:Int |-> initMemory(sizeDataType(Type))),
+            enterScope(Ds, 0)
+          )
+        ...</k>
+        <globals> G </globals>
         <startup> true </startup>
-        requires notBool(isOpaqueType(Type) orBool (Name in_keys(G)))
+        requires notBool(isOpaqueType(Type)) andBool notBool(Name in keys(G))
+  rule  <k>addGlobal(Name, EnvEntry, StoreAddn, C) => C ...</k>
+        <globals>... .Map => Name|->EnvEntry </globals>
+        <env> E => E[Name <- EnvEntry] </env>
+        <store>... .Map => StoreAddn </store>
+        <startup> true </startup>
 
   rule  <k>consStoreBin(0, _) => . ...</k>
   rule  <k>consStoreBin(Bin, SKey) => . ...</k>

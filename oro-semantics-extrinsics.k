@@ -68,8 +68,11 @@ module ORO-SEMANTICS-EXTRINSICS
           orBool
           (keys(M) in SetItem(skeysDefineVarRet))
         )
-  rule  extrinsicRegistrationWithVars ~> Vars:YamlSeq ~> yseq(|_| StmtsList)
-      =>  resolveTypes(datasOfYseq(Vars), typeResolvedVar)
+  //rule  extrinsicRegistrationWithVars ~> yseq(|T| Vars)
+  //    =>  extrinsicRegistrationWithVars ~> [ Vars ]
+  //      requires isGenericSequence(yseq(| "?" | .Datas))
+  rule  extrinsicRegistrationWithVars ~> [ Vars ] ~> [ StmtsList ]
+      =>  resolveTypes(Vars, typeResolvedVar)
           ~> varScope(.VarDecls : registerExtrinsics( yseqToK( StmtsList ) ))
   syntax K  ::= "extrinsicRegistrationSkipVars"
   rule  <k>registerResolvedExtrinsic( M:Map )
@@ -82,7 +85,7 @@ module ORO-SEMANTICS-EXTRINSICS
           orBool
           (keys(M) in SetItem(skeysDefineVarRet))
         )
-  rule  extrinsicRegistrationSkipVars ~> yseq(|_| StmtsList)
+  rule  extrinsicRegistrationSkipVars ~> [ StmtsList ]
       => registerExtrinsics( yseqToK( StmtsList) )
   rule  registerResolvedExtrinsic( M:Map ) => .
         requires notBool(
@@ -100,8 +103,8 @@ module ORO-SEMANTICS-EXTRINSICS
         )
 
   rule  <k>registerSubr(
-          ("Oro/Core/Subroutine/Define" |-> yseq( | _ | Args ))
-          ("as" |-> yseq( | _ | Body))
+          ("Oro/Core/Subroutine/Define" |-> [ Args ])
+          ("as" |-> [ Body ])
         ) =>
           resolveTypes(Args, subrAccumArg)
           ~> subroutine(.VarDecls ; E ; XS : yseqToK( Body ))
@@ -117,9 +120,9 @@ module ORO-SEMANTICS-EXTRINSICS
         <extrinsics>... .Map => varNames(Args) |-> subroutine( Args; E; XS : Body )</extrinsics>
         // TODO: requires notOverridingIntrinsic(Args)
   rule  <k>registerFun(
-          ("Oro/Core/Subroutine/Define" |-> yseq( | _ | Args))
+          ("Oro/Core/Subroutine/Define" |-> [ Args ])
           ("returning" |-> RetType:Data)
-          ("as" |-> yseq( | _ | Body))
+          ("as" |-> [ Body ])
         ) =>
           resolveType(RetType, subrReturns)
           ~> resolveTypes(Args, subrAccumArg)

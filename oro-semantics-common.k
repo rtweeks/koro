@@ -34,16 +34,18 @@ module ORO-SEMANTICS-COMMON
   syntax TaggedScalar   ::= "yval" "(" "|" String "|" String ")"
   syntax FixedTypeData  ::= String
                           | Map
+                          | BSeq
                           | YamlSeq
                           | "ymap" "(" "|" String "|" Map ")"
   syntax YamlSeq        ::= "yseq" "(" "|" String "|" Datas ")"
+  syntax BSeq           ::= "[" Datas "]"
 
   syntax Datas      ::= List{Data, ","}
                       | "datasOfYseq" "(" YamlSeq ")"         [function]
   syntax Ints ::= List{Int, ","}
 
   rule  <k>yseqToK( .Datas ) => . ...</k>
-  rule  <k>yseqToK( ymap( | _ | M ),Ds ) => M ~> yseqToK( Ds ) ...</k>
+  rule  <k>yseqToK( M:Map, Ds ) => M ~> yseqToK( Ds ) ...</k>
 
   rule  datasOfYseq( yseq(|_| L) ) => L
 
@@ -62,4 +64,10 @@ module ORO-SEMANTICS-COMMON
   rule  isGenericMapping(ymap(|"!"| _)) => true
   rule  isGenericMapping(ymap(|"tag:yaml.org,2002:map"| _)) => true
   rule  isGenericMapping(_) => false      [owise]
+
+  syntax Bool ::= "isGenericSequence" "(" Data ")"            [function]
+  rule  isGenericSequence(yseq(|"?"| _)) => true
+  rule  isGenericSequence(yseq(|"!"| _)) => true
+  rule  isGenericSequence(yseq(|"tag:yaml.org,2002:seq"| _)) => true
+  rule  isGenericSequence(_) => false     [owise]
 endmodule

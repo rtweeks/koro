@@ -12,7 +12,7 @@ module ORO-SEMANTICS-FLOW
               | "nsskeyResolvedForFlow"
               | "flowResolvedStmt" "(" Map ")"
 
-  rule  <k>("Oro/Core/Flow/Do" |-> yseq( | _ | L)) => yseqToK(L) ...</k>
+  rule  <k>("Oro/Core/Flow/Do" |-> [ L ]) => yseqToK(L) ...</k>
 
   rule  <k>("Oro/Core/Flow/Label" |-> D) ~> K => K</k>
         <labels> L => L[D <- jumpContext((("Oro/Core/Flow/Label" |-> D) ~> K), L, E)] </labels>
@@ -25,7 +25,7 @@ module ORO-SEMANTICS-FLOW
         <env> _ => E </env>
   rule  <k>("Oro/Core/Flow/Go to label" |-> D) => forwardJump( D ) ...</k>
         <labels>Ls</labels>
-        requires notBool(D in_keys(Ls))
+        requires notBool(D in keys(Ls))
 
   rule  forwardJump( D ) ~> M:Map
       =>  nonspecResolve(M, nsskeyResolvedForFlow)
@@ -46,12 +46,12 @@ module ORO-SEMANTICS-FLOW
         <labels>... .Map => (D' |-> K)</labels>
         requires notBool( D' in SetItem(D) )
   rule  forwardJump( D )
-        ~> flowResolvedStmt("Oro/Core/Flow/Do" |-> yseq( | _ | .Datas)) => .
+        ~> flowResolvedStmt("Oro/Core/Flow/Do" |-> [ .Datas ]) => .
   rule  forwardJump( D )
-        ~> flowResolvedStmt("Oro/Core/Flow/Do" |-> yseq( | ST | ymap( | _ | M),Ss))
+        ~> flowResolvedStmt("Oro/Core/Flow/Do" |-> [ M:Map, Ss ])
       =>  forwardJump( D )
           ~> M
-          ~> ("Oro/Core/Flow/Do" |-> yseq( | ST | Ss))
+          ~> ("Oro/Core/Flow/Do" |-> [Ss])
   rule  forwardJump( D ) ~> flowResolvedStmt(M) => forwardJump( D )
         requires  notBool(
           (keys(M) in SetItem(skeysLabel))

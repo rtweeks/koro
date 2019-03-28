@@ -40,7 +40,7 @@ module ORO-SEMANTICS-TYPES
   syntax VarDecls ::= List{VarDecl, ","}
 
   rule  resolveTypes(.Datas, _) => .
-  rule  resolveTypes((ymap(|_| VarInfo),Rest), Tag)
+  rule  resolveTypes(((VarInfo:Map),Rest), Tag)
       =>  nonspecResolve(VarInfo, varDefEntry)
           ~> varDefMap(.Map)
           ~> resolveTypes(Rest, Tag)
