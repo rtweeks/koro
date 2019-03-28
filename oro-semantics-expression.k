@@ -1,9 +1,11 @@
 require "oro-semantics-common.k"
+require "oro-semantics-nsskeys.k"
 require "oro-semantics-types.k"
 require "oro-semantics-variables.k"
 
 module ORO-SEMANTICS-EXPRESSION
   imports ORO-SEMANTICS-COMMON
+  imports ORO-SEMANTICS-NSSKEYS
   imports ORO-SEMANTICS-TYPES
   imports ORO-SEMANTICS-VARIABLES
   imports MINT
@@ -67,7 +69,16 @@ module ORO-SEMANTICS-EXPRESSION
 
   rule  evaluate(T : ymap(|MT| M), Tag) => evaluate(T : M, Tag)
         requires isGenericMapping(ymap(|MT| M))
-
+  syntax K  ::= "evalAccumNonspecResolved"
+  rule  evaluate(T : (M:Map), Tag)
+      =>  nonspecResolve(M, evalAccumNonspecResolved)
+          ~> evaluate(T : .Map, Tag)
+        requires containsQMarkYval(keys(M))
+  rule  evalAccumNonspecResolved
+        ~> resolvedNonspecKey(R)
+        ~> Rest
+        ~> evaluate(T : M, Tag)
+      =>  Rest ~> evaluate(T : (M R), Tag)
 
   rule  isScalarExprTag("?") => true
   rule  isScalarExprTag("!expr") => true
