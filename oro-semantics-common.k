@@ -34,14 +34,18 @@ module ORO-SEMANTICS-COMMON
   syntax TaggedScalar   ::= "yval" "(" "|" String "|" String ")"
   syntax FixedTypeData  ::= String
                           | Map
-                          | "yseq" "(" "|" String "|" Datas ")"
+                          | YamlSeq
                           | "ymap" "(" "|" String "|" Map ")"
+  syntax YamlSeq        ::= "yseq" "(" "|" String "|" Datas ")"
 
   syntax Datas      ::= List{Data, ","}
+                      | "datasOfYseq" "(" YamlSeq ")"         [function]
   syntax Ints ::= List{Int, ","}
 
   rule  <k>yseqToK( .Datas ) => . ...</k>
   rule  <k>yseqToK( ymap( | _ | M ),Ds ) => M ~> yseqToK( Ds ) ...</k>
+
+  rule  datasOfYseq( yseq(|_| L) ) => L
 
 
   syntax Bool ::= "containsQMarkYval" "(" Set ")"             [function]
