@@ -84,4 +84,17 @@ module ORO-SEMANTICS-EXPRESSION
   rule  isScalarExprTag("!expr") => true
   rule  isScalarExprTag("tag:the-oro-project.com,2010:expr") => true
   rule  isScalarExprTag(_) => false    [owise]
+
+  syntax Data ::= "opaque_ptr" "(" DataType "," Int /* store key */ ")"
+                | BytesStorage
+  rule  <k>evaluate(memaddr_type : ("Oro/Core/Variable/Address of" |-> yval(|T| Name)), C)
+          => C ~> opaque_ptr(Type, N)
+        ...</k>
+        <env>... Name |-> var(Type, opaque(N)) ...</env>
+        requires isScalarExprTag(T)
+  rule  <k>evaluate(memaddr_type : ("Oro/Core/Variable/Address of" |-> yval(|T| Name)), C)
+          => C ~> S
+        ...</k>
+        <env>... Name |-> var(Type, S:BytesStorage) ...</env>
+        requires isScalarExprTag(T)
 endmodule

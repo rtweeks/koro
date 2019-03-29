@@ -1,0 +1,15 @@
+- Oro/Core/Subroutine/Define:
+  - {argument: consume address from variable, as: memory address}
+  as:
+  - ["Oro/CoreLib/Set", {"base type": "string"}, "empty at"]:
+      consume address from variable
+
+- Oro/Core/Subroutine/Define:
+  - {argument: consume address, as: memory address}
+  as:
+  - consume address from variable: consume address
+
+- Oro/Core/Variable/Define:
+  - {variable: some global value, as: string}
+  for:
+  - consume address: {Oro/Core/Variable/Address of: some global value}
