@@ -68,9 +68,6 @@ module ORO-SEMANTICS-EXTRINSICS
           orBool
           (keys(M) in SetItem(skeysDefineVarRet))
         )
-  //rule  extrinsicRegistrationWithVars ~> yseq(|T| Vars)
-  //    =>  extrinsicRegistrationWithVars ~> [ Vars ]
-  //      requires isGenericSequence(yseq(| "?" | .Datas))
   rule  extrinsicRegistrationWithVars ~> [ Vars ] ~> [ StmtsList ]
       =>  resolveTypes(Vars, typeResolvedVar)
           ~> varScope(.VarDecls : registerExtrinsics( yseqToK( StmtsList ) ))
