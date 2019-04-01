@@ -1,0 +1,1 @@
+<T> <k> "print" |-> "Hello, world!\n" </k> <refs> .Map </refs> <extrinsics> .Map </extrinsics> <scopeBin> 1 </scopeBin> <startup> true </startup> <context> <labels> .Map </labels> <env> .Map </env> </context> <globals> .Map </globals> <store> .Map </store> <storeBins> .Map </storeBins> <arch> wordSize |-> 64 endian |-> little </arch> </T>
