@@ -1,1 +1,47 @@
-<T> <k> "print" |-> "Hello, world!\n" </k> <refs> .Map </refs> <extrinsics> .Map </extrinsics> <extrinsicScopes> 1 |-> ( .Map ) </extrinsicScopes> <scopeBin> 1 </scopeBin> <startup> true </startup> <context> <labels> yval ( | "?" | "nowhere" ) |-> jumpContext ( ( "Oro/Core/Flow/Label" |-> yval ( | "?" | "nowhere" ) ) ~> yseqToK ( .VarDecls ) ~> exitScope ( 0 , .Map ) ~> ( yval ( | "?" | "print" ) |-> "Hello, world!\n" ) , .Map , "useless" |-> var ( int_type ( signed 32 ) , bytes ( 3 , 0 ) ) ) </labels> <env> .Map </env> </context> <globals> "useless" |-> var ( int_type ( signed 32 ) , bytes ( 3 , 0 ) ) </globals> <store> 3 |-> memory ( nil  ( nil  ( nil  ( nil  .Bytes ) ) ) / 4 ) </store> <storeBins> .Map </storeBins> <arch> wordSize |-> 64 endian |-> little </arch> </T>
+<T>
+  <k>
+    "print" |-> "Hello, world!\n"
+  </k>
+  <refs>
+    .Map
+  </refs>
+  <extrinsics>
+    .Map
+  </extrinsics>
+  <extrinsicScopes>
+    1 |-> ( .Map )
+  </extrinsicScopes>
+  <scopeBin>
+    1
+  </scopeBin>
+  <startup>
+    true
+  </startup>
+  <context>
+    <labels>
+      yval ( | "?" | "nowhere" ) |-> jumpContext
+      ( ( "Oro/Core/Flow/Label" |-> yval ( | "?" | "nowhere" ) ) ~> yseqToK ( .VarDecls ) ~>
+        exitScope ( 0 , .Map ) ~> ( yval ( | "?" | "print" ) |-> "Hello, world!\n" ) , .Map
+        , "useless" |-> var
+        ( int_type ( signed 32 ) , bytes ( 3 , 0 ) ) )
+    </labels>
+    <env>
+      .Map
+    </env>
+  </context>
+  <globals>
+    "useless" |-> var
+    ( int_type ( signed 32 ) , bytes ( 3 , 0 ) )
+  </globals>
+  <store>
+    3 |-> memory
+    ( nil  ( nil  ( nil  ( nil  .Bytes ) ) ) / 4 )
+  </store>
+  <storeBins>
+    .Map
+  </storeBins>
+  <arch>
+    wordSize |-> 64
+    endian |-> little
+  </arch>
+</T>

@@ -1,1 +1,45 @@
-<T> <k> ( "print" |-> "Your name: " ) ~> ( yval ( | "?" | "print" ) |-> ( yval ( | "?" | "catenate" ) |-> "Hello, " yval ( | "?" | "with" ) |-> ( yval ( | "?" | "catenate" ) |-> ( yval ( | "?" | "read until" ) |-> "\n" ) yval ( | "?" | "with" ) |-> ".\n" ) ) ) </k> <refs> .Map </refs> <extrinsics> .Map </extrinsics> <extrinsicScopes> 1 |-> ( .Map ) </extrinsicScopes> <scopeBin> 1 </scopeBin> <startup> true </startup> <context> <labels> .Map </labels> <env> .Map </env> </context> <globals> .Map </globals> <store> .Map </store> <storeBins> .Map </storeBins> <arch> wordSize |-> 64 endian |-> little </arch> </T>
+<T>
+  <k>
+    ( "print" |-> "Your name: " ) ~> ( yval ( | "?" | "print" ) |-> ( yval ( | "?" | "catenate"
+          ) |-> "Hello, " yval
+        ( | "?" | "with" ) |-> ( yval ( | "?" | "catenate" ) |-> ( yval ( | "?" | "read until"
+              ) |-> "\n" ) yval
+          ( | "?" | "with" ) |-> ".\n" ) ) )
+  </k>
+  <refs>
+    .Map
+  </refs>
+  <extrinsics>
+    .Map
+  </extrinsics>
+  <extrinsicScopes>
+    1 |-> ( .Map )
+  </extrinsicScopes>
+  <scopeBin>
+    1
+  </scopeBin>
+  <startup>
+    true
+  </startup>
+  <context>
+    <labels>
+      .Map
+    </labels>
+    <env>
+      .Map
+    </env>
+  </context>
+  <globals>
+    .Map
+  </globals>
+  <store>
+    .Map
+  </store>
+  <storeBins>
+    .Map
+  </storeBins>
+  <arch>
+    wordSize |-> 64
+    endian |-> little
+  </arch>
+</T>

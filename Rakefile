@@ -1,5 +1,6 @@
 require 'pathname'
 require 'tmpdir'
+require './helper/format-output'
 
 task :default => :build
 K_BACKEND = "java"
@@ -35,6 +36,7 @@ desc "Build the Oro executable semantic interpreter"
 task :build => [KORO_TIMESTAMP, oro_parser_exe]
 
 namespace :test do
+  desc "Test one case"
   task :one => [:build] do
     require 'highline'  # <- highline gem
     last_pick = Pathname(__FILE__).dirname + ".last_one_test"
@@ -66,7 +68,8 @@ namespace :test do
       dir = Pathname(dir)
       actual_outpath = dir + 'actual.txt'
       sh './koro-run', '--output-file', actual_outpath.to_s, test_file
-      actual_output = actual_outpath.read
+      actual_output = ConfigStyler.style(actual_outpath.read)
+      actual_outpath.write actual_output
       puts
       puts actual_output
       puts
