@@ -7,6 +7,7 @@ module ORO-SEMANTICS-COMMON
     <k> readSourceSeq( $PGM:Sequence ) </k>
     <refs> .Map </refs>
     <extrinsics> .Map </extrinsics>
+    <extrinsicScopes> .Map </extrinsicScopes>
     <scopeBin> 1 </scopeBin>
     <startup> true </startup>
     <context>

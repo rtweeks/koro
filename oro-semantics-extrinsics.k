@@ -12,6 +12,9 @@ module ORO-SEMANTICS-EXTRINSICS
   imports ORO-SEMANTICS-VARIABLES
 
   syntax K  ::= "registerExtrinsics" "(" K ")"
+              | "regextrNewScope"
+              | "regextr" "(" K ")"
+              | "regextrCaptureScope"
               | "registerResolvedExtrinsic" "(" Map ")"
               | "nsskeyResolvedInExtrinsicScan"
               | "registerSubr" "(" Map ")"
@@ -28,20 +31,30 @@ module ORO-SEMANTICS-EXTRINSICS
     <extrinsics/> after the second, and the subroutine body as the final
     argument
   */
-  syntax StatementCallable  ::= "subroutine" "(" VarDecls ";" Map ";" Map ":" K ")"
-                              | "subroutine-returning" "(" VarDecls "->" DataType ";" Map ";" Map ":" K ")"
+  syntax StatementCallable  ::= "subroutine" "(" VarDecls ";" Map ";" Int ":" K ")"
+                              | "subroutine-returning" "(" VarDecls "->" DataType ";" Map ";" Int ":" K ")"
 
-  rule  registerExtrinsics( . ) => .
-  rule  registerExtrinsics( yseqToK( .Datas ) ) => .
-  rule  registerExtrinsics( yseqToK( D, Ds ) ) =>
-          registerExtrinsics( D )
-          ~> registerExtrinsics( yseqToK( Ds ) )
-  rule  registerExtrinsics( ymap(|T| M) ) => registerExtrinsics( M )
+  rule  <k>registerExtrinsics( Stmts )
+          =>  regextrNewScope
+              ~> regextr( Stmts )
+              ~> regextrCaptureScope
+        ...</k>
+  rule  <k>regextrNewScope => . ...</k>
+        <extrinsicScopes>... .Map => regextrNewScope |-> !Scope:Int </extrinsicScopes>
+  rule  <k>regextrCaptureScope => . ...</k>
+        <extrinsics> XS </extrinsics>
+        <extrinsicScopes>... (regextrNewScope |-> XSKey) => (XSKey |-> XS) ...</extrinsicScopes>
+  rule  regextr( . ) => .
+  rule  regextr( yseqToK( .Datas ) ) => regextr( . )
+  rule  regextr( yseqToK( D, Ds ) ) =>
+          regextr( D )
+          ~> regextr( yseqToK( Ds ) )
+  rule  regextr( ymap(|T| M) ) => regextr( M )
         requires isGenericMapping( ymap(|T| M) )
-  rule  registerExtrinsics( M:Map ~> Rest ) =>
+  rule  regextr( M:Map ~> Rest ) =>
           nonspecResolve(M, nsskeyResolvedInExtrinsicScan)
           ~> registerResolvedExtrinsic( .Map )
-          ~> registerExtrinsics( Rest )
+          ~> regextr( Rest )
   rule  nsskeyResolvedInExtrinsicScan
         ~> resolvedNonspecKey(R)
         ~> nonspecResolve(M, Tag)
@@ -70,7 +83,7 @@ module ORO-SEMANTICS-EXTRINSICS
         )
   rule  extrinsicRegistrationWithVars ~> [ Vars ] ~> [ StmtsList ]
       =>  resolveTypes(Vars, typeResolvedVar)
-          ~> varScope(.VarDecls : registerExtrinsics( yseqToK( StmtsList ) ))
+          ~> varScope(.VarDecls : regextr( yseqToK( StmtsList ) ))
   syntax K  ::= "extrinsicRegistrationSkipVars"
   rule  <k>registerResolvedExtrinsic( M:Map )
           =>  extrinsicRegistrationSkipVars
@@ -83,7 +96,7 @@ module ORO-SEMANTICS-EXTRINSICS
           (keys(M) in SetItem(skeysDefineVarRet))
         )
   rule  extrinsicRegistrationSkipVars ~> [ StmtsList ]
-      => registerExtrinsics( yseqToK( StmtsList) )
+      => regextr( yseqToK( StmtsList) )
   rule  registerResolvedExtrinsic( M:Map ) => .
         requires notBool(
           (keys(M) in SetItem(skeysDefineSubr))
@@ -104,10 +117,10 @@ module ORO-SEMANTICS-EXTRINSICS
           ("as" |-> [ Body ])
         ) =>
           resolveTypes(Args, subrAccumArg)
-          ~> subroutine(.VarDecls ; E ; XS : yseqToK( Body ))
+          ~> subroutine(.VarDecls ; E ; XSKey : yseqToK( Body ))
         ...</k>
         <env> E </env>
-        <extrinsics> XS </extrinsics>
+        <extrinsicScopes>... regextrNewScope |-> XSKey ...</extrinsicScopes>
   rule  subrAccumArg
         ~> D:VarDecl
         ~> Rest
@@ -123,10 +136,10 @@ module ORO-SEMANTICS-EXTRINSICS
         ) =>
           resolveType(RetType, subrReturns)
           ~> resolveTypes(Args, subrAccumArg)
-          ~> subroutine(.VarDecls; E; XS : yseqToK(Body))
+          ~> subroutine(.VarDecls; E; XSKey : yseqToK(Body))
         ...</k>
         <env> E </env>
-        <extrinsics> XS </extrinsics>
+        <extrinsicScopes>... regextrNewScope |-> XSKey ...</extrinsicScopes>
   rule  subrReturns
         ~> RetType:DataType
         ~> ArgResolution
@@ -164,20 +177,23 @@ module ORO-SEMANTICS-EXTRINSICS
           ~> evaluateArgs(.ArgEvals)
           ~> executeSubroutine(Args, .Map, E, XS, Body)
         ...</k>
-        <extrinsics>... keys(Call) |-> subroutine(Args; E; XS : Body) ...</extrinsics>
+        <extrinsics>... keys(Call) |-> subroutine(Args; E; XSKey : Body) ...</extrinsics>
+        <extrinsicScopes>... XSKey |-> XS:Map ...</extrinsicScopes>
   rule  <k> Call:Map =>
           generateArgEvalPlan(Args, Call)
           ~> evaluateArgs(.ArgEvals)
           ~> executeSubroutine((varDecl("result" : RetType), Args), .Map, E, XS, Body)
         ...</k>
-        <extrinsics>... keys(Call) |-> subroutine-returning(Args -> RetType; E; XS : Body) ...</extrinsics>
+        <extrinsics>... keys(Call) |-> subroutine-returning(Args -> RetType; E; XSKey : Body) ...</extrinsics>
+        <extrinsicScopes>... XSKey |-> XS:Map ...</extrinsicScopes>
 
   rule  <k> evaluate(T : (Call:Map), Tag ) =>
           generateArgEvalPlan(Args, Call)
           ~> evaluateArgs(.ArgEvals)
           ~> executeReturningSubroutine((varDecl("result" : T'), Args), .Map, E, XS, Body, Tag)
         ...</k>
-        <extrinsics>... keys(Call) |-> subroutine-returning(Args -> T'; E; XS : Body) ...</extrinsics>
+        <extrinsics>... keys(Call) |-> subroutine-returning(Args -> T'; E; XSKey : Body) ...</extrinsics>
+        <extrinsicScopes>... XSKey |-> XS:Map ...</extrinsicScopes>
         requires typeConversionAllowed(T' -> T)
 
   rule  generateArgEvalPlan(.VarDecls, _) => .
