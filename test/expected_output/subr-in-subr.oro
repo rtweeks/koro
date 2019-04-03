@@ -6,44 +6,50 @@
     .Map
   </refs>
   <extrinsics>
-    SetItem ( "fluff" ) |-> subroutine ( varDecl ( "fluff" : string_type ) , .VarDecls ; .Map
-      ; 1 : yseqToK ( ( yval ( | "?" | "as" ) |-> [ ( yval ( | "?" | "Oro/Core/Flow/Label"
-                ) |-> yval ( | "?" | "nowhere" ) ) , .VarDecls ] yval
-          ( | "?" | "Oro/Core/Subroutine/Define" ) |-> [ ( yval ( | "?" | "argument" ) |->
-              yval ( | "?" | "gaze at" ) yval
-              ( | "?" | "as" ) |-> yval ( | "?" | "string" ) ) , .VarDecls ] ) , ( ( yval (
-              | "?" | "gaze at" ) |-> yval ( | "?" | "fluff" ) ) , .VarDecls ) ) )
+    SetItem ( "fluff" ) |-> subroutine ( 2 )
   </extrinsics>
+  <extrs>
+    <subr>
+      <id>
+        4
+      </id>
+      <attrs>
+        "args" |-> ( varDecl ( "gaze at" : string_type ) , .VarDecls )
+        "env" |-> ( .Map )
+        "extrScope" |-> 3
+      </attrs>
+      <body>
+        yseqToK ( ( yval ( | "?" | "Oro/Core/Flow/Label" ) |-> yval ( | "?" | "nowhere" ) )
+          , .VarDecls )
+      </body>
+    </subr>
+    <subr>
+      <id>
+        2
+      </id>
+      <attrs>
+        "args" |-> ( varDecl ( "fluff" : string_type ) , .VarDecls )
+        "env" |-> ( .Map )
+        "extrScope" |-> 1
+      </attrs>
+      <body>
+        yseqToK ( ( yval ( | "?" | "as" ) |-> [ ( yval ( | "?" | "Oro/Core/Flow/Label" ) |->
+                yval ( | "?" | "nowhere" ) ) , .VarDecls ] yval
+            ( | "?" | "Oro/Core/Subroutine/Define" ) |-> [ ( yval ( | "?" | "argument" ) |->
+                yval ( | "?" | "gaze at" ) yval
+                ( | "?" | "as" ) |-> yval ( | "?" | "string" ) ) , .VarDecls ] ) , ( ( yval
+              ( | "?" | "gaze at" ) |-> yval ( | "?" | "fluff" ) ) , .VarDecls ) )
+      </body>
+    </subr>
+  </extrs>
   <extrinsicScopes>
-    5 |-> ( SetItem ( "gaze at" ) |-> subroutine ( varDecl ( "gaze at" : string_type ) , .VarDecls
-        ; .Map ; 2 : yseqToK ( ( yval ( | "?" | "Oro/Core/Flow/Label" ) |-> yval ( | "?" |
-              "nowhere" ) ) , .VarDecls ) )
+    1 |-> ( SetItem ( "fluff" ) |-> subroutine ( 2 ) )
+    7 |-> ( SetItem ( "gaze at" ) |-> subroutine ( 4 )
       SetItem
-      ( "fluff" ) |-> subroutine ( varDecl ( "fluff" : string_type ) , .VarDecls ; .Map ; 1
-        : yseqToK ( ( yval ( | "?" | "as" ) |-> [ ( yval ( | "?" | "Oro/Core/Flow/Label" )
-                |-> yval ( | "?" | "nowhere" ) ) , .VarDecls ] yval
-            ( | "?" | "Oro/Core/Subroutine/Define" ) |-> [ ( yval ( | "?" | "argument" ) |->
-                yval ( | "?" | "gaze at" ) yval
-                ( | "?" | "as" ) |-> yval ( | "?" | "string" ) ) , .VarDecls ] ) , ( ( yval
-              ( | "?" | "gaze at" ) |-> yval ( | "?" | "fluff" ) ) , .VarDecls ) ) ) )
-    1 |-> ( SetItem ( "fluff" ) |-> subroutine ( varDecl ( "fluff" : string_type ) , .VarDecls
-        ; .Map ; 1 : yseqToK ( ( yval ( | "?" | "as" ) |-> [ ( yval ( | "?" | "Oro/Core/Flow/Label"
-                  ) |-> yval ( | "?" | "nowhere" ) ) , .VarDecls ] yval
-            ( | "?" | "Oro/Core/Subroutine/Define" ) |-> [ ( yval ( | "?" | "argument" ) |->
-                yval ( | "?" | "gaze at" ) yval
-                ( | "?" | "as" ) |-> yval ( | "?" | "string" ) ) , .VarDecls ] ) , ( ( yval
-              ( | "?" | "gaze at" ) |-> yval ( | "?" | "fluff" ) ) , .VarDecls ) ) ) )
-    2 |-> ( SetItem ( "gaze at" ) |-> subroutine ( varDecl ( "gaze at" : string_type ) , .VarDecls
-        ; .Map ; 2 : yseqToK ( ( yval ( | "?" | "Oro/Core/Flow/Label" ) |-> yval ( | "?" |
-              "nowhere" ) ) , .VarDecls ) )
+      ( "fluff" ) |-> subroutine ( 2 ) )
+    3 |-> ( SetItem ( "gaze at" ) |-> subroutine ( 4 )
       SetItem
-      ( "fluff" ) |-> subroutine ( varDecl ( "fluff" : string_type ) , .VarDecls ; .Map ; 1
-        : yseqToK ( ( yval ( | "?" | "as" ) |-> [ ( yval ( | "?" | "Oro/Core/Flow/Label" )
-                |-> yval ( | "?" | "nowhere" ) ) , .VarDecls ] yval
-            ( | "?" | "Oro/Core/Subroutine/Define" ) |-> [ ( yval ( | "?" | "argument" ) |->
-                yval ( | "?" | "gaze at" ) yval
-                ( | "?" | "as" ) |-> yval ( | "?" | "string" ) ) , .VarDecls ] ) , ( ( yval
-              ( | "?" | "gaze at" ) |-> yval ( | "?" | "fluff" ) ) , .VarDecls ) ) ) )
+      ( "fluff" ) |-> subroutine ( 2 ) )
   </extrinsicScopes>
   <scopeBin>
     3
@@ -66,8 +72,8 @@
     .Map
   </store>
   <storeBins>
-    1 |-> ( 4 , .VarDecls )
-    2 |-> ( 7 , .VarDecls )
+    1 |-> ( 5 , .VarDecls )
+    2 |-> ( 8 , .VarDecls )
   </storeBins>
   <arch>
     wordSize |-> 64

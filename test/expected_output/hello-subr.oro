@@ -1,9 +1,7 @@
 <T>
   <k>
     ( "print" |-> yval ( | "?" | "\u6253\u5370" ) ) ~> yseqToK ( .VarDecls ) ~> exitScope (
-      1 , .Map ) ~> exitSubroutine ( SetItem ( "\u6253\u5370" ) |-> subroutine ( varDecl (
-          "\u6253\u5370" : string_type ) , .VarDecls ; .Map ; 1 : yseqToK ( ( yval ( | "?"
-              | "print" ) |-> yval ( | "?" | "\u6253\u5370" ) ) , .VarDecls ) )
+      1 , .Map ) ~> exitSubroutine ( SetItem ( "\u6253\u5370" ) |-> subroutine ( 2 )
       ,
       .Map )
   </k>
@@ -11,17 +9,27 @@
     .Map
   </refs>
   <extrinsics>
-    SetItem ( "\u6253\u5370" ) |-> subroutine ( varDecl ( "\u6253\u5370" : string_type ) ,
-      .VarDecls ; .Map ; 1 : yseqToK ( ( yval ( | "?" | "print" ) |-> yval ( | "?" | "\u6253\u5370"
-            ) ) , .VarDecls ) )
+    SetItem ( "\u6253\u5370" ) |-> subroutine ( 2 )
   </extrinsics>
+  <extrs>
+    <subr>
+      <id>
+        2
+      </id>
+      <attrs>
+        "args" |-> ( varDecl ( "\u6253\u5370" : string_type ) , .VarDecls )
+        "env" |-> ( .Map )
+        "extrScope" |-> 1
+      </attrs>
+      <body>
+        yseqToK ( ( yval ( | "?" | "print" ) |-> yval ( | "?" | "\u6253\u5370" ) ) , .VarDecls
+          )
+      </body>
+    </subr>
+  </extrs>
   <extrinsicScopes>
-    1 |-> ( SetItem ( "\u6253\u5370" ) |-> subroutine ( varDecl ( "\u6253\u5370" : string_type
-          ) , .VarDecls ; .Map ; 1 : yseqToK ( ( yval ( | "?" | "print" ) |-> yval ( | "?"
-              | "\u6253\u5370" ) ) , .VarDecls ) ) )
-    2 |-> ( SetItem ( "\u6253\u5370" ) |-> subroutine ( varDecl ( "\u6253\u5370" : string_type
-          ) , .VarDecls ; .Map ; 1 : yseqToK ( ( yval ( | "?" | "print" ) |-> yval ( | "?"
-              | "\u6253\u5370" ) ) , .VarDecls ) ) )
+    1 |-> ( SetItem ( "\u6253\u5370" ) |-> subroutine ( 2 ) )
+    3 |-> ( SetItem ( "\u6253\u5370" ) |-> subroutine ( 2 ) )
   </extrinsicScopes>
   <scopeBin>
     2

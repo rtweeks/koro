@@ -24,15 +24,17 @@ module ORO-SEMANTICS-EXTRINSICS
               | "nsskeyResolvedInFunArgs"
               | "registerImports" "(" Map ")"
               | "loadMacros" "(" Map ")"
-              | StatementCallable
+              | Subroutine
+              | StatementCallableAgg
 
   /*
     subroutine and function capture <env/> after the first semicolon,
     <extrinsics/> after the second, and the subroutine body as the final
     argument
   */
-  syntax StatementCallable  ::= "subroutine" "(" VarDecls ";" Map ";" Int ":" K ")"
-                              | "subroutine-returning" "(" VarDecls "->" DataType ";" Map ";" Int ":" K ")"
+  syntax Subroutine ::= "subroutine" "(" Int /* <subr> <id> N </id> </subr> */ ")"
+  syntax StatementCallableAgg ::= "subroutine-agg" "(" VarDecls ";" Map ";" Int ":" K ")"
+                                | "subroutine-returning-agg" "(" VarDecls "->" DataType ";" Map ";" Int ":" K ")"
 
   rule  <k>registerExtrinsics( Stmts )
           =>  regextrNewScope
@@ -117,17 +119,26 @@ module ORO-SEMANTICS-EXTRINSICS
           ("as" |-> [ Body ])
         ) =>
           resolveTypes(Args, subrAccumArg)
-          ~> subroutine(.VarDecls ; E ; XSKey : yseqToK( Body ))
+          ~> subroutine-agg(.VarDecls ; E ; XSKey : yseqToK( Body ))
         ...</k>
         <env> E </env>
         <extrinsicScopes>... regextrNewScope |-> XSKey ...</extrinsicScopes>
   rule  subrAccumArg
         ~> D:VarDecl
         ~> Rest
-        ~> subroutine(Args; E; XS : Body)
-      =>  Rest ~> subroutine((D,Args); E; XS : Body)
-  rule  <k>subroutine(Args; E; XS : Body) => . ...</k>
-        <extrinsics>... .Map => varNames(Args) |-> subroutine( Args; E; XS : Body )</extrinsics>
+        ~> subroutine-agg(Args; E; XS : Body)
+      =>  Rest ~> subroutine-agg((D,Args); E; XS : Body)
+  rule  <k>subroutine-agg(Args; E; XS : Body) => . ...</k>
+        <extrinsics>... .Map => varNames(Args) |-> subroutine( !SId )</extrinsics>
+        (.Bag => <subr>...
+          <id> !SId:Int </id>
+          <attrs>
+            "args" |-> Args
+            "env" |-> E
+            "extrScope" |-> XS
+          </attrs>
+          <body> Body </body>
+        ...</subr>)
         // TODO: requires notOverridingIntrinsic(Args)
   rule  <k>registerFun(
           ("Oro/Core/Subroutine/Define" |-> [ Args ])
@@ -136,26 +147,36 @@ module ORO-SEMANTICS-EXTRINSICS
         ) =>
           resolveType(RetType, subrReturns)
           ~> resolveTypes(Args, subrAccumArg)
-          ~> subroutine(.VarDecls; E; XSKey : yseqToK(Body))
+          ~> subroutine-agg(.VarDecls; E; XSKey : yseqToK(Body))
         ...</k>
         <env> E </env>
         <extrinsicScopes>... regextrNewScope |-> XSKey ...</extrinsicScopes>
   rule  subrReturns
         ~> RetType:DataType
         ~> ArgResolution
-        ~> subroutine(Vs; E; XS : Body)
+        ~> subroutine-agg(Vs; E; XS : Body)
       =>  ArgResolution
-          ~> subroutine-returning(Vs -> RetType; E; XS : Body)
+          ~> subroutine-returning-agg(Vs -> RetType; E; XS : Body)
   rule  subrAccumArg
         ~> D:VarDecl
         ~> Rest
-        ~> subroutine-returning(Args -> RetType; E; XS : Body)
+        ~> subroutine-returning-agg(Args -> RetType; E; XS : Body)
       =>  Rest
-          ~> subroutine-returning((D,Args) -> RetType; E; XS : Body)
-  rule  <k>subroutine-returning(Args -> RetType; E; XS : Body) => . ...</k>
+          ~> subroutine-returning-agg((D,Args) -> RetType; E; XS : Body)
+  rule  <k>subroutine-returning-agg(Args -> RetType; E; XS : Body) => . ...</k>
         <extrinsics>...
-          .Map => varNames(Args) |-> subroutine-returning( Args -> RetType; E; XS : Body )
+          .Map => varNames(Args) |-> subroutine( !SId )
         </extrinsics>
+        (.Bag => <subr>...
+          <id> !SId:Int </id>
+          <attrs>
+            "args" |-> Args
+            "returns" |-> RetType
+            "env" |-> E
+            "extrScope" |-> XS
+          </attrs>
+          <body> Body </body>
+        ...</subr>)
         // TODO: requires notOverridingIntrinsic(Args)
   // TODO: "Oro/Core/Subroutine/Import" "from"
   // TODO: "Oro/Core/Macro/Use from"
@@ -165,34 +186,83 @@ module ORO-SEMANTICS-EXTRINSICS
   rule  <k>( "Oro/Core/Subroutine/Define" |-> _ "returning" |-> _ "as" |-> _ ) => . ...</k>
   rule  <k>( "Oro/Core/Macro/Use from" |-> _ ) => . ...</k>
 
-  syntax K  ::= "generateArgEvalPlan" "(" VarDecls "," Map ")"
+  syntax K  ::= "subrCall" "(" K /* Args:VarDecls */ ";" K /* E:Map */ ";" K /* XSKey:Int */ ";" K /* Body:K */ ";" Map /* Call */ ")"
+              | ReturningSubrCall
+              | "generateArgEvalPlan" "(" VarDecls "," Map ")"
               | "evaluateArgs" "(" ArgEvals ")"
               | "executeSubroutine" "(" VarDecls "," Map /* argVals */ "," Map /* env */ "," Map /* extrinsics */ "," K /* body */ ")"
               | "executeReturningSubroutine" "(" VarDecls "," Map /* argVals */ "," Map /* env */ "," Map /* extrinsics */ "," K /* body */ "," K /* continuation tag */ ")"
               | "actualArg" "(" Data ")"
+  syntax ReturningSubrCall  ::= "subrCall" "(" K /* Args:VarDecls */ "->" K /* RetType:DataType */ ";" K /* E:Map */ ";" K /* XSKey:Int */ ";" K /* Body:K */ ";" Map /* Call */ ")"
   syntax ArgEval  ::= "evalArg" "(" Data ":" DataType "<-" K ")"
   syntax ArgEvals ::= List{ArgEval, ","}
-  rule  <k> Call:Map =>
-          generateArgEvalPlan(Args, Call)
-          ~> evaluateArgs(.ArgEvals)
-          ~> executeSubroutine(Args, .Map, E, XS, Body)
+  syntax K  ::= "stop" "(" K ")"
+  rule  <k> Call:Map => subrCall(
+          Subr["args"];
+          Subr["env"];
+          Subr["extrScope"];
+          Body;
+          Call
+        )
+      ...</k>
+      <extrinsics>... keys(Call) |-> subroutine(SubrId) ...</extrinsics>
+      <subr>
+        <id> SubrId </id>
+        <attrs> Subr </attrs>
+        <body> Body </body>
+      </subr>
+      requires notBool ("returns" in keys(Subr))
+  rule  <k> subrCall( Args:VarDecls; E:Map; XSKey:Int; Body:K; Call) =>
+        generateArgEvalPlan(Args, Call)
+        ~> evaluateArgs(.ArgEvals)
+        ~> executeSubroutine(Args, .Map, E, XS, Body)
+      ...</k>
+      <extrinsics>... keys(Call) |-> subroutine(SubrId) ...</extrinsics>
+      <extrinsicScopes>... XSKey |-> XS:Map ...</extrinsicScopes>
+  rule  <k> Call:Map => subrCall(
+            Subr["args"] -> Subr["returns"];
+            Subr["env"];
+            Subr["extrScope"];
+            Body;
+            Call
+          )
         ...</k>
-        <extrinsics>... keys(Call) |-> subroutine(Args; E; XSKey : Body) ...</extrinsics>
-        <extrinsicScopes>... XSKey |-> XS:Map ...</extrinsicScopes>
-  rule  <k> Call:Map =>
+        <extrinsics>... keys(Call) |-> subroutine(SubrId) ...</extrinsics>
+        <subr>
+          <id> SubrId </id>
+          <attrs> Subr </attrs>
+          <body> Body </body>
+        </subr>
+        requires "returns" in keys(Subr)
+  rule  <k> subrCall( Args:VarDecls -> RetType:DataType; E:Map; XSKey:Int; Body:K; Call) =>
           generateArgEvalPlan(Args, Call)
           ~> evaluateArgs(.ArgEvals)
           ~> executeSubroutine((varDecl("result" : RetType), Args), .Map, E, XS, Body)
         ...</k>
-        <extrinsics>... keys(Call) |-> subroutine-returning(Args -> RetType; E; XSKey : Body) ...</extrinsics>
         <extrinsicScopes>... XSKey |-> XS:Map ...</extrinsicScopes>
 
+  syntax K  ::= "evaluate" "(" DataType ":" ReturningSubrCall "," K ")"
   rule  <k> evaluate(T : (Call:Map), Tag ) =>
+          evaluate(T : subrCall(
+            Subr["args"] -> Subr["returns"];
+            Subr["env"];
+            Subr["extrScope"];
+            Body;
+            Call
+          ), Tag)
+        ...</k>
+        <extrinsics>... keys(Call) |-> subroutine(SubrId) ...</extrinsics>
+        <subr>
+          <id> SubrId </id>
+          <attrs> Subr </attrs>
+          <body> Body </body>
+        </subr>
+        requires "returns" in keys(Subr)
+  rule  <k> evaluate(T : subrCall( Args:VarDecls -> T':DataType; E:Map; XSKey:Int; Body:K; Call), Tag ) =>
           generateArgEvalPlan(Args, Call)
           ~> evaluateArgs(.ArgEvals)
           ~> executeReturningSubroutine((varDecl("result" : T'), Args), .Map, E, XS, Body, Tag)
         ...</k>
-        <extrinsics>... keys(Call) |-> subroutine-returning(Args -> T'; E; XSKey : Body) ...</extrinsics>
         <extrinsicScopes>... XSKey |-> XS:Map ...</extrinsicScopes>
         requires typeConversionAllowed(T' -> T)
 
@@ -204,7 +274,7 @@ module ORO-SEMANTICS-EXTRINSICS
 
   rule  evaluateArgs(.ArgEvals) => .
   rule  evaluateArgs(AE,AEs) => AE ~> evaluateArgs(AEs)
-  rule  evalArg(N : T <- Expr) => evaluate(T : Expr, actualArg(N))
+  rule  evalArg(N : T <- Expr:Data) => evaluate(T : Expr, actualArg(N))
   rule  actualArg(N)
         ~> V:Data
         ~> Rest

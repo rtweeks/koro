@@ -6,20 +6,28 @@
     .Map
   </refs>
   <extrinsics>
-    SetItem ( "fluff" ) |-> subroutine-returning
-    ( varDecl ( "fluff" : string_type ) , .VarDecls -> string_type ; .Map ; 1 : yseqToK ( (
-          yval ( | "?" | "Oro/Core/Flow/Label" ) |-> yval ( | "?" | "nowhere" ) ) , .VarDecls
-        ) )
+    SetItem ( "fluff" ) |-> subroutine ( 2 )
   </extrinsics>
+  <extrs>
+    <subr>
+      <id>
+        2
+      </id>
+      <attrs>
+        "args" |-> ( varDecl ( "fluff" : string_type ) , .VarDecls )
+        "returns" |-> string_type
+        "extrScope" |-> 1
+        "env" |-> ( .Map )
+      </attrs>
+      <body>
+        yseqToK ( ( yval ( | "?" | "Oro/Core/Flow/Label" ) |-> yval ( | "?" | "nowhere" ) )
+          , .VarDecls )
+      </body>
+    </subr>
+  </extrs>
   <extrinsicScopes>
-    1 |-> ( SetItem ( "fluff" ) |-> subroutine-returning
-      ( varDecl ( "fluff" : string_type ) , .VarDecls -> string_type ; .Map ; 1 : yseqToK (
-          ( yval ( | "?" | "Oro/Core/Flow/Label" ) |-> yval ( | "?" | "nowhere" ) ) , .VarDecls
-          ) ) )
-    2 |-> ( SetItem ( "fluff" ) |-> subroutine-returning
-      ( varDecl ( "fluff" : string_type ) , .VarDecls -> string_type ; .Map ; 1 : yseqToK (
-          ( yval ( | "?" | "Oro/Core/Flow/Label" ) |-> yval ( | "?" | "nowhere" ) ) , .VarDecls
-          ) ) )
+    1 |-> ( SetItem ( "fluff" ) |-> subroutine ( 2 ) )
+    3 |-> ( SetItem ( "fluff" ) |-> subroutine ( 2 ) )
   </extrinsicScopes>
   <scopeBin>
     2

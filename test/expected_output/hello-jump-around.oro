@@ -12,6 +12,9 @@
   <extrinsics>
     .Map
   </extrinsics>
+  <extrs>
+    .SubrCellBag
+  </extrs>
   <extrinsicScopes>
     1 |-> ( .Map )
   </extrinsicScopes>

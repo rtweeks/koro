@@ -3,26 +3,16 @@
     ( [ "Oro/CoreLib/Set" , ( ( "base type" |-> "string" ) , ( "empty at" , .VarDecls ) ) ]
       |-> yval ( | "?" | "consume address from variable" ) ) ~> yseqToK ( .VarDecls ) ~> exitScope
     ( 2 , "consume address" |-> var
-      ( memaddr_type , opaque ( 12 ) ) ) ~> exitSubroutine ( SetItem ( "consume address" )
-      |-> subroutine ( varDecl ( "consume address" : memaddr_type ) , .VarDecls ; .Map ; 1
-        : yseqToK ( ( yval ( | "?" | "consume address from variable" ) |-> yval ( | "?" | "consume address"
-              ) ) , .VarDecls ) )
+      ( memaddr_type , opaque ( 13 ) ) ) ~> exitSubroutine ( SetItem ( "consume address" )
+      |-> subroutine ( 3 )
       SetItem
-      ( "consume address from variable" ) |-> subroutine ( varDecl ( "consume address from variable"
-          : memaddr_type ) , .VarDecls ; .Map ; 1 : yseqToK ( ( [ "Oro/CoreLib/Set" , ( ( "base type"
-                  |-> "string" ) , ( "empty at" , .VarDecls ) ) ] |-> yval ( | "?" | "consume address from variable"
-              ) ) , .VarDecls ) )
+      ( "consume address from variable" ) |-> subroutine ( 2 )
       ,
       .Map ) ~> yseqToK ( .VarDecls ) ~> exitScope ( 1 , "some global value" |-> var
-      ( string_type , opaque ( 2 ) ) ) ~> exitSubroutine ( SetItem ( "consume address" ) |->
-      subroutine ( varDecl ( "consume address" : memaddr_type ) , .VarDecls ; .Map ; 1 : yseqToK
-        ( ( yval ( | "?" | "consume address from variable" ) |-> yval ( | "?" | "consume address"
-              ) ) , .VarDecls ) )
+      ( string_type , opaque ( 5 ) ) ) ~> exitSubroutine ( SetItem ( "consume address" ) |->
+      subroutine ( 3 )
       SetItem
-      ( "consume address from variable" ) |-> subroutine ( varDecl ( "consume address from variable"
-          : memaddr_type ) , .VarDecls ; .Map ; 1 : yseqToK ( ( [ "Oro/CoreLib/Set" , ( ( "base type"
-                  |-> "string" ) , ( "empty at" , .VarDecls ) ) ] |-> yval ( | "?" | "consume address from variable"
-              ) ) , .VarDecls ) )
+      ( "consume address from variable" ) |-> subroutine ( 2 )
       ,
       .Map ) ~> yseqToK ( .VarDecls ) ~> exitScope ( 0 , .Map )
   </k>
@@ -30,40 +20,52 @@
     .Map
   </refs>
   <extrinsics>
-    SetItem ( "consume address" ) |-> subroutine ( varDecl ( "consume address" : memaddr_type
-        ) , .VarDecls ; .Map ; 1 : yseqToK ( ( yval ( | "?" | "consume address from variable"
-            ) |-> yval ( | "?" | "consume address" ) ) , .VarDecls ) )
+    SetItem ( "consume address" ) |-> subroutine ( 3 )
     SetItem
-    ( "consume address from variable" ) |-> subroutine ( varDecl ( "consume address from variable"
-        : memaddr_type ) , .VarDecls ; .Map ; 1 : yseqToK ( ( [ "Oro/CoreLib/Set" , ( ( "base type"
-                |-> "string" ) , ( "empty at" , .VarDecls ) ) ] |-> yval ( | "?" | "consume address from variable"
-            ) ) , .VarDecls ) )
+    ( "consume address from variable" ) |-> subroutine ( 2 )
   </extrinsics>
+  <extrs>
+    <subr>
+      <id>
+        3
+      </id>
+      <attrs>
+        "args" |-> ( varDecl ( "consume address" : memaddr_type ) , .VarDecls )
+        "env" |-> ( .Map )
+        "extrScope" |-> 1
+      </attrs>
+      <body>
+        yseqToK ( ( yval ( | "?" | "consume address from variable" ) |-> yval ( | "?" | "consume address"
+              ) ) , .VarDecls )
+      </body>
+    </subr>
+    <subr>
+      <id>
+        2
+      </id>
+      <attrs>
+        "args" |-> ( varDecl ( "consume address from variable" : memaddr_type ) , .VarDecls
+          )
+        "env" |-> ( .Map )
+        "extrScope" |-> 1
+      </attrs>
+      <body>
+        yseqToK ( ( [ "Oro/CoreLib/Set" , ( ( "base type" |-> "string" ) , ( "empty at" , .VarDecls
+                  ) ) ] |-> yval ( | "?" | "consume address from variable" ) ) , .VarDecls
+          )
+      </body>
+    </subr>
+  </extrs>
   <extrinsicScopes>
-    13 |-> ( SetItem ( "consume address" ) |-> subroutine ( varDecl ( "consume address" : memaddr_type
-          ) , .VarDecls ; .Map ; 1 : yseqToK ( ( yval ( | "?" | "consume address from variable"
-              ) |-> yval ( | "?" | "consume address" ) ) , .VarDecls ) )
+    12 |-> ( SetItem ( "consume address" ) |-> subroutine ( 3 )
       SetItem
-      ( "consume address from variable" ) |-> subroutine ( varDecl ( "consume address from variable"
-          : memaddr_type ) , .VarDecls ; .Map ; 1 : yseqToK ( ( [ "Oro/CoreLib/Set" , ( ( "base type"
-                  |-> "string" ) , ( "empty at" , .VarDecls ) ) ] |-> yval ( | "?" | "consume address from variable"
-              ) ) , .VarDecls ) ) )
-    1 |-> ( SetItem ( "consume address" ) |-> subroutine ( varDecl ( "consume address" : memaddr_type
-          ) , .VarDecls ; .Map ; 1 : yseqToK ( ( yval ( | "?" | "consume address from variable"
-              ) |-> yval ( | "?" | "consume address" ) ) , .VarDecls ) )
+      ( "consume address from variable" ) |-> subroutine ( 2 ) )
+    1 |-> ( SetItem ( "consume address" ) |-> subroutine ( 3 )
       SetItem
-      ( "consume address from variable" ) |-> subroutine ( varDecl ( "consume address from variable"
-          : memaddr_type ) , .VarDecls ; .Map ; 1 : yseqToK ( ( [ "Oro/CoreLib/Set" , ( ( "base type"
-                  |-> "string" ) , ( "empty at" , .VarDecls ) ) ] |-> yval ( | "?" | "consume address from variable"
-              ) ) , .VarDecls ) ) )
-    10 |-> ( SetItem ( "consume address" ) |-> subroutine ( varDecl ( "consume address" : memaddr_type
-          ) , .VarDecls ; .Map ; 1 : yseqToK ( ( yval ( | "?" | "consume address from variable"
-              ) |-> yval ( | "?" | "consume address" ) ) , .VarDecls ) )
+      ( "consume address from variable" ) |-> subroutine ( 2 ) )
+    15 |-> ( SetItem ( "consume address" ) |-> subroutine ( 3 )
       SetItem
-      ( "consume address from variable" ) |-> subroutine ( varDecl ( "consume address from variable"
-          : memaddr_type ) , .VarDecls ; .Map ; 1 : yseqToK ( ( [ "Oro/CoreLib/Set" , ( ( "base type"
-                  |-> "string" ) , ( "empty at" , .VarDecls ) ) ] |-> yval ( | "?" | "consume address from variable"
-              ) ) , .VarDecls ) ) )
+      ( "consume address from variable" ) |-> subroutine ( 2 ) )
   </extrinsicScopes>
   <scopeBin>
     3
@@ -77,23 +79,23 @@
     </labels>
     <env>
       "consume address from variable" |-> var
-      ( memaddr_type , opaque ( 15 ) )
+      ( memaddr_type , opaque ( 16 ) )
     </env>
   </context>
   <globals>
     "some global value" |-> var
-    ( string_type , opaque ( 2 ) )
+    ( string_type , opaque ( 5 ) )
   </globals>
   <store>
-    12 |-> opaque_ptr
-    ( string_type , 2 )
-    2 |-> ""
-    15 |-> opaque_ptr
-    ( string_type , 2 )
+    16 |-> opaque_ptr
+    ( string_type , 5 )
+    13 |-> opaque_ptr
+    ( string_type , 5 )
+    5 |-> ""
   </store>
   <storeBins>
-    1 |-> ( 12 , .VarDecls )
-    2 |-> ( 15 , .VarDecls )
+    1 |-> ( 13 , .VarDecls )
+    2 |-> ( 16 , .VarDecls )
   </storeBins>
   <arch>
     wordSize |-> 64
