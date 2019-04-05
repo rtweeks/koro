@@ -10,9 +10,10 @@ module ORO-SEMANTICS-COMMON
     <extrs>
       <subr multiplicity="*">
         <id> -1 </id>
-        <attrs> .Map </attrs>
+        <attrs> .Map </attrs> /* "args", "returns"?, "env", "extrScope"  */
         <body> . </body>
       </subr>
+      <unscannedSubrs> .List </unscannedSubrs>
     </extrs>
     <extrinsicScopes> .Map </extrinsicScopes>
     <scopeBin> 1 </scopeBin>

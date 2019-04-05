@@ -26,10 +26,12 @@
           )
       </body>
     </subr>
+    <unscannedSubrs>
+      .List
+    </unscannedSubrs>
   </extrs>
   <extrinsicScopes>
     1 |-> ( SetItem ( "\u6253\u5370" ) |-> subroutine ( 2 ) )
-    3 |-> ( SetItem ( "\u6253\u5370" ) |-> subroutine ( 2 ) )
   </extrinsicScopes>
   <scopeBin>
     2
@@ -43,17 +45,17 @@
     </labels>
     <env>
       "\u6253\u5370" |-> var
-      ( string_type , opaque ( 4 ) )
+      ( string_type , opaque ( 5 ) )
     </env>
   </context>
   <globals>
     .Map
   </globals>
   <store>
-    4 |-> "\u4f60\u597d\uff0c\u4e16\u754c\u3002\n"
+    5 |-> "\u4f60\u597d\uff0c\u4e16\u754c\u3002\n"
   </store>
   <storeBins>
-    1 |-> ( 4 , .VarDecls )
+    1 |-> ( 5 , .VarDecls )
   </storeBins>
   <arch>
     wordSize |-> 64

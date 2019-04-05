@@ -30,7 +30,7 @@
       <attrs>
         "args" |-> ( varDecl ( "fluff" : string_type ) , .VarDecls )
         "env" |-> ( .Map )
-        "extrScope" |-> 1
+        "extrScope" |-> 7
       </attrs>
       <body>
         yseqToK ( ( yval ( | "?" | "as" ) |-> [ ( yval ( | "?" | "Oro/Core/Flow/Label" ) |->
@@ -41,13 +41,16 @@
               ( | "?" | "gaze at" ) |-> yval ( | "?" | "fluff" ) ) , .VarDecls ) )
       </body>
     </subr>
+    <unscannedSubrs>
+      .List
+    </unscannedSubrs>
   </extrs>
   <extrinsicScopes>
     1 |-> ( SetItem ( "fluff" ) |-> subroutine ( 2 ) )
-    7 |-> ( SetItem ( "gaze at" ) |-> subroutine ( 4 )
+    3 |-> ( SetItem ( "gaze at" ) |-> subroutine ( 4 )
       SetItem
       ( "fluff" ) |-> subroutine ( 2 ) )
-    3 |-> ( SetItem ( "gaze at" ) |-> subroutine ( 4 )
+    7 |-> ( SetItem ( "gaze at" ) |-> subroutine ( 4 )
       SetItem
       ( "fluff" ) |-> subroutine ( 2 ) )
   </extrinsicScopes>
@@ -72,8 +75,8 @@
     .Map
   </store>
   <storeBins>
-    1 |-> ( 5 , .VarDecls )
-    2 |-> ( 8 , .VarDecls )
+    1 |-> ( 8 , .VarDecls )
+    2 |-> ( 10 , .VarDecls )
   </storeBins>
   <arch>
     wordSize |-> 64

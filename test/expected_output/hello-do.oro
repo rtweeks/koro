@@ -10,9 +10,12 @@
   </extrinsics>
   <extrs>
     .SubrCellBag
+    <unscannedSubrs>
+      .List
+    </unscannedSubrs>
   </extrs>
   <extrinsicScopes>
-    1 |-> ( .Map )
+    .Map
   </extrinsicScopes>
   <scopeBin>
     1

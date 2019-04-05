@@ -15,6 +15,9 @@ module ORO-SEMANTICS-EXTRINSICS
               | "regextrNewScope"
               | "regextr" "(" K ")"
               | "regextrCaptureScope"
+              | "regextrScanBodies" "(" List ")"
+              | "regextrUpdateSubr" "(" Int ")"
+              | "regextrRestoreOuter" "(" Map ")"
               | "registerResolvedExtrinsic" "(" Map ")"
               | "nsskeyResolvedInExtrinsicScan"
               | "registerSubr" "(" Map ")"
@@ -43,9 +46,48 @@ module ORO-SEMANTICS-EXTRINSICS
         ...</k>
   rule  <k>regextrNewScope => . ...</k>
         <extrinsicScopes>... .Map => regextrNewScope |-> !Scope:Int </extrinsicScopes>
-  rule  <k>regextrCaptureScope => . ...</k>
+  rule  <k>regextrCaptureScope => regextrScanBodies( NewSubrs ) ...</k>
         <extrinsics> XS </extrinsics>
+        <subr>...
+          <attrs>... "extrScope" |-> XSKey ...</attrs>
+        ...</subr>
         <extrinsicScopes>... (regextrNewScope |-> XSKey) => (XSKey |-> XS) ...</extrinsicScopes>
+        <unscannedSubrs> NewSubrs => .List </unscannedSubrs>
+  rule  <k>regextrCaptureScope => . ...</k>
+        <extrinsicScopes>... (regextrNewScope |-> _) => .Map ...</extrinsicScopes>
+        <unscannedSubrs> .List </unscannedSubrs>
+
+  rule  regextrScanBodies( .List ) => .
+  rule  <k>regextrScanBodies( ListItem(SubrId:Int) Rest:List )
+          =>  registerExtrinsics( Body )
+              ~> regextrUpdateSubr( SubrId )
+              ~> regextrRestoreOuter( XS )
+              ~> regextrScanBodies( Rest )
+        ...</k>
+        <subr>...
+          <id> SubrId </id>
+          <attrs>... "extrScope" |-> XSKey ...</attrs>
+          <body> Body </body>
+        ...</subr>
+        <extrinsicScopes>... XSKey |-> XS' ...</extrinsicScopes>
+        <extrinsics> XS => XS' </extrinsics>
+  rule  <k>regextrUpdateSubr( SubrId ) => . ...</k>
+        <subr>...
+          <id> SubrId </id>
+          <attrs>... "extrScope" |-> (OuterXSKey => !XSKey:Int) ...</attrs>
+        ...</subr>
+        <extrinsics> XS </extrinsics>
+        <extrinsicScopes> XSS => XSS[!XSKey <- XS] </extrinsicScopes>
+        requires XSS[OuterXSKey] =/=K XS
+  rule  <k>regextrUpdateSubr( SubrId ) => . ...</k>
+        <subr>...
+          <id> SubrId </id>
+          <attrs>... "extrScope" |-> XSKey:Int ...</attrs>
+        ...</subr>
+        <extrinsics> XS </extrinsics>
+        <extrinsicScopes>... XSKey |-> XS ...</extrinsicScopes>
+  rule  <k>regextrRestoreOuter( XS ) => . ...</k>
+        <extrinsics> _ => XS </extrinsics>
   rule  regextr( . ) => .
   rule  regextr( yseqToK( .Datas ) ) => regextr( . )
   rule  regextr( yseqToK( D, Ds ) ) =>
@@ -139,6 +181,7 @@ module ORO-SEMANTICS-EXTRINSICS
           </attrs>
           <body> Body </body>
         ...</subr>)
+        <unscannedSubrs>... .List => ListItem(!SId) </unscannedSubrs>
         // TODO: requires notOverridingIntrinsic(Args)
   rule  <k>registerFun(
           ("Oro/Core/Subroutine/Define" |-> [ Args ])
@@ -177,6 +220,7 @@ module ORO-SEMANTICS-EXTRINSICS
           </attrs>
           <body> Body </body>
         ...</subr>)
+        <unscannedSubrs>... .List => ListItem(!SId) </unscannedSubrs>
         // TODO: requires notOverridingIntrinsic(Args)
   // TODO: "Oro/Core/Subroutine/Import" "from"
   // TODO: "Oro/Core/Macro/Use from"
@@ -300,7 +344,6 @@ module ORO-SEMANTICS-EXTRINSICS
               | "exitSubroutine" "(" Map /* extrinsics */ "," Map /* labels */ ")"
   rule  <k>executeSubroutine(Args, ArgVals, E', XS', Body) =>
             enterSubroutine(XS', E')
-            ~> registerExtrinsics(Body)
             ~> enterScope(Args, ScopeBin)
             ~> assignArguments(ArgVals)
             ~> Body

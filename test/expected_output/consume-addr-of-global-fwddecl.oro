@@ -3,7 +3,7 @@
     ( [ "Oro/CoreLib/Set" , ( ( "base type" |-> "string" ) , ( "empty at" , .VarDecls ) ) ]
       |-> yval ( | "?" | "consume address from variable" ) ) ~> yseqToK ( .VarDecls ) ~> exitScope
     ( 2 , "consume address" |-> var
-      ( memaddr_type , opaque ( 13 ) ) ) ~> exitSubroutine ( SetItem ( "consume address" )
+      ( memaddr_type , opaque ( 16 ) ) ) ~> exitSubroutine ( SetItem ( "consume address" )
       |-> subroutine ( 2 )
       SetItem
       ( "consume address from variable" ) |-> subroutine ( 3 )
@@ -55,15 +55,12 @@
               ) ) , .VarDecls )
       </body>
     </subr>
+    <unscannedSubrs>
+      .List
+    </unscannedSubrs>
   </extrs>
   <extrinsicScopes>
-    12 |-> ( SetItem ( "consume address" ) |-> subroutine ( 2 )
-      SetItem
-      ( "consume address from variable" ) |-> subroutine ( 3 ) )
     1 |-> ( SetItem ( "consume address" ) |-> subroutine ( 2 )
-      SetItem
-      ( "consume address from variable" ) |-> subroutine ( 3 ) )
-    15 |-> ( SetItem ( "consume address" ) |-> subroutine ( 2 )
       SetItem
       ( "consume address from variable" ) |-> subroutine ( 3 ) )
   </extrinsicScopes>
@@ -79,7 +76,7 @@
     </labels>
     <env>
       "consume address from variable" |-> var
-      ( memaddr_type , opaque ( 16 ) )
+      ( memaddr_type , opaque ( 18 ) )
     </env>
   </context>
   <globals>
@@ -89,13 +86,13 @@
   <store>
     16 |-> opaque_ptr
     ( string_type , 5 )
-    13 |-> opaque_ptr
-    ( string_type , 5 )
     5 |-> ""
+    18 |-> opaque_ptr
+    ( string_type , 5 )
   </store>
   <storeBins>
-    1 |-> ( 13 , .VarDecls )
-    2 |-> ( 16 , .VarDecls )
+    1 |-> ( 16 , .VarDecls )
+    2 |-> ( 18 , .VarDecls )
   </storeBins>
   <arch>
     wordSize |-> 64

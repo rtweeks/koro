@@ -24,10 +24,12 @@
           , .VarDecls )
       </body>
     </subr>
+    <unscannedSubrs>
+      .List
+    </unscannedSubrs>
   </extrs>
   <extrinsicScopes>
     1 |-> ( SetItem ( "fluff" ) |-> subroutine ( 2 ) )
-    3 |-> ( SetItem ( "fluff" ) |-> subroutine ( 2 ) )
   </extrinsicScopes>
   <scopeBin>
     2
@@ -50,7 +52,7 @@
     .Map
   </store>
   <storeBins>
-    1 |-> ( 6 , ( 4 , .VarDecls ) )
+    1 |-> ( 7 , ( 5 , .VarDecls ) )
   </storeBins>
   <arch>
     wordSize |-> 64
