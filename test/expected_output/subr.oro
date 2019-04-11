@@ -2,6 +2,9 @@
   <k>
     .
   </k>
+  <sourceFile>
+    "test/subr.oro"
+  </sourceFile>
   <refs>
     .Map
   </refs>
@@ -51,7 +54,7 @@
     .Map
   </store>
   <storeBins>
-    1 |-> ( 5 , .VarDecls )
+    1 |-> ( 6 , .VarDecls )
   </storeBins>
   <arch>
     wordSize |-> 64

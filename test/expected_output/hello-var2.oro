@@ -2,6 +2,9 @@
   <k>
     "print" |-> "Hello, world!\n"
   </k>
+  <sourceFile>
+    "test/hello-var2.oro"
+  </sourceFile>
   <refs>
     .Map
   </refs>
@@ -29,7 +32,7 @@
       ( ( "Oro/Core/Flow/Label" |-> yval ( | "?" | "nowhere" ) ) ~> yseqToK ( .VarDecls ) ~>
         exitScope ( 0 , .Map ) ~> ( yval ( | "?" | "print" ) |-> "Hello, world!\n" ) , .Map
         , "useless" |-> var
-        ( int_type ( signed 32 ) , bytes ( 3 , 0 ) ) )
+        ( int_type ( signed 32 ) , bytes ( 2 , 0 ) ) )
     </labels>
     <env>
       .Map
@@ -37,10 +40,10 @@
   </context>
   <globals>
     "useless" |-> var
-    ( int_type ( signed 32 ) , bytes ( 3 , 0 ) )
+    ( int_type ( signed 32 ) , bytes ( 2 , 0 ) )
   </globals>
   <store>
-    3 |-> memory
+    2 |-> memory
     ( nil  ( nil  ( nil  ( nil  .Bytes ) ) ) / 4 )
   </store>
   <storeBins>

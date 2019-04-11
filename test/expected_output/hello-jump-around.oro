@@ -6,6 +6,9 @@
         "?" | "backward jump" ) ) ~> ( yval ( | "?" | "Oro/Core/Flow/Label" ) |-> yval ( |
         "?" | "end" ) )
   </k>
+  <sourceFile>
+    "test/hello-jump-around.oro"
+  </sourceFile>
   <refs>
     .Map
   </refs>

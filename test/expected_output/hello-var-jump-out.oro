@@ -2,6 +2,9 @@
   <k>
     "print" |-> "Hello, world!\n"
   </k>
+  <sourceFile>
+    "test/hello-var-jump-out.oro"
+  </sourceFile>
   <refs>
     .Map
   </refs>
@@ -35,10 +38,10 @@
   </context>
   <globals>
     "useless" |-> var
-    ( int_type ( signed 32 ) , bytes ( 3 , 0 ) )
+    ( int_type ( signed 32 ) , bytes ( 2 , 0 ) )
   </globals>
   <store>
-    3 |-> memory
+    2 |-> memory
     ( nil  ( nil  ( nil  ( nil  .Bytes ) ) ) / 4 )
   </store>
   <storeBins>

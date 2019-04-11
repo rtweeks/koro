@@ -4,6 +4,7 @@ module Lib
     , normalizeWithConfig
     , config
     , NormalizerConfig (..)
+    , scalarTokenForString
     ) where
 
 import qualified Data.Map.Strict as M
@@ -444,6 +445,8 @@ stringLiteral s = "\"" ++ (escapedContent s) ++ "\""
                 ordC :: Int
                 ordC = ord c
 
+scalarTokenForString :: String -> String
+scalarTokenForString v = "`.__`(#token(\"\\\"!\\\"\",\"String\"),#token(" ++ (stringLiteral $ stringLiteral v) ++ ",\"String\"))"
 
 --- General Lens Operations ---
 

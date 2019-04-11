@@ -6,6 +6,9 @@
               ) |-> "\n" ) yval
           ( | "?" | "with" ) |-> ".\n" ) ) )
   </k>
+  <sourceFile>
+    "test/hello3.oro"
+  </sourceFile>
   <refs>
     .Map
   </refs>
