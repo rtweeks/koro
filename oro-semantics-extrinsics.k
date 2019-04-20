@@ -25,7 +25,7 @@ module ORO-SEMANTICS-EXTRINSICS
               | "subrAccumArg"
               | "registerFun" "(" Map ")"
               | "nsskeyResolvedInFunArgs"
-              | "registerImports" "(" Map ")"
+              | "registerImport" "(" Map ")"
               | "loadMacros" "(" Map ")"
               | Subroutine
               | StatementCallableAgg
@@ -110,8 +110,9 @@ module ORO-SEMANTICS-EXTRINSICS
         requires  keys(M) in SetItem(skeysDefineSubr)
   rule  registerResolvedExtrinsic( M ) => registerFun( M )
         requires  keys(M) in SetItem(skeysDefineFun)
-  rule  registerResolvedExtrinsic( M ) => registerImports( M )
+  rule  registerResolvedExtrinsic( M ) => registerImport( M )
         requires  keys(M) in SetItem(skeysImportFrom)
+        orBool    keys(M) in SetItem(skeysImportReturningFrom)
   rule  registerResolvedExtrinsic( M ) => loadMacros( M )
         requires  keys(M) in SetItem(skeysUseMacros)
   syntax K  ::= "extrinsicRegistrationWithVars"
