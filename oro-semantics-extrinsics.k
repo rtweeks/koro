@@ -53,6 +53,7 @@ module ORO-SEMANTICS-EXTRINSICS
         ...</subr>
         <extrinsicScopes>... (regextrNewScope |-> XSKey) => (XSKey |-> XS) ...</extrinsicScopes>
         <unscannedSubrs> NewSubrs => .List </unscannedSubrs>
+        requires size(NewSubrs) >Int 0
   rule  <k>regextrCaptureScope => . ...</k>
         <extrinsicScopes>... (regextrNewScope |-> _) => .Map ...</extrinsicScopes>
         <unscannedSubrs> .List </unscannedSubrs>
