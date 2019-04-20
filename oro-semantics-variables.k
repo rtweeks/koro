@@ -47,20 +47,20 @@ module ORO-SEMANTICS-VARIABLES
   /* TODO: Oro/Core/Variable/Define as expression */
 
   syntax K  ::= "enterScope" "(" VarDecls "," Int ")"
-              | "exitScope" "(" Int "," Map ")"
+              | "exitScope" "(" Int "," Map "," Bool /* StartingUp */ ")"
               | "consStoreBin" "(" Int "," Int ")"
               | "killSKeys" "(" Ints ")"
   rule  <k>varScope(Decls: Stmts)
           =>  enterScope(Decls, 0)
               ~> Stmts
-              ~> exitScope(0, E)
+              ~> exitScope(0, E, true)
         ...</k>
         <env> E </env>
         <startup> true </startup>
   rule  <k>varScope(Decls: Stmts)
           =>  enterScope(Decls, ScopeBin)
               ~> Stmts
-              ~> exitScope(ScopeBin, E)
+              ~> exitScope(ScopeBin, E, false)
         ...</k>
         <scopeBin> ScopeBin => ScopeBin +Int 1 </scopeBin>
         <storeBins>... .Map => (ScopeBin |-> .Ints) ...</storeBins>
@@ -127,11 +127,11 @@ module ORO-SEMANTICS-VARIABLES
         <storeBins>... Bin |-> (SKeys => (SKey, SKeys)) ...</storeBins>
         requires Bin >Int 0
 
-  rule  <k>exitScope(0, E) => . ...</k>
+  rule  <k>exitScope(0, E, _) => . ...</k>
         <env> _ => E </env>
-  rule  <k>exitScope(Bin, E) => killSKeys(SKeys) ...</k>
+  rule  <k>exitScope(Bin, E, StartingUp) => killSKeys(SKeys) ...</k>
         <storeBins>... Bin |-> SKeys ...</storeBins>
-        <startup> _ => (Bin ==Int 1)</startup>
+        <startup> _ => StartingUp </startup>
         <env> _ => E </env>
         requires Bin >Int 0
 
