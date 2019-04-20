@@ -20,6 +20,7 @@ module ORO-SEMANTICS-COMMON
     <units>
       <unit multiplicity="*">
         <filepath> "" </filepath>
+        <subrs> .Map </subrs>
       </unit>
     </units>
     <extrinsicScopes> .Map </extrinsicScopes>
