@@ -17,6 +17,19 @@
       .List
     </unscannedSubrs>
   </extrs>
+  <pendingImports>
+    .List
+  </pendingImports>
+  <units>
+    <unit>
+      <filepath>
+        "test/hello-var-jump-out.oro"
+      </filepath>
+      <subrs>
+        .Map
+      </subrs>
+    </unit>
+  </units>
   <extrinsicScopes>
     .Map
   </extrinsicScopes>
@@ -26,6 +39,9 @@
   <startup>
     true
   </startup>
+  <declScanInSubrs>
+    false
+  </declScanInSubrs>
   <context>
     <labels>
       yval ( | "?" | "jump forward" ) |-> jumpContext
@@ -38,10 +54,10 @@
   </context>
   <globals>
     "useless" |-> var
-    ( int_type ( signed 32 ) , bytes ( 2 , 0 ) )
+    ( int_type ( signed 32 ) , bytes ( 3 , 0 ) )
   </globals>
   <store>
-    2 |-> memory
+    3 |-> memory
     ( nil  ( nil  ( nil  ( nil  .Bytes ) ) ) / 4 )
   </store>
   <storeBins>

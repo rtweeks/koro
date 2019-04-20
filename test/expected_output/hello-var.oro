@@ -17,6 +17,19 @@
       .List
     </unscannedSubrs>
   </extrs>
+  <pendingImports>
+    .List
+  </pendingImports>
+  <units>
+    <unit>
+      <filepath>
+        "test/hello-var.oro"
+      </filepath>
+      <subrs>
+        .Map
+      </subrs>
+    </unit>
+  </units>
   <extrinsicScopes>
     .Map
   </extrinsicScopes>
@@ -26,21 +39,24 @@
   <startup>
     true
   </startup>
+  <declScanInSubrs>
+    false
+  </declScanInSubrs>
   <context>
     <labels>
       .Map
     </labels>
     <env>
       "useless" |-> var
-      ( string_type , opaque ( 2 ) )
+      ( string_type , opaque ( 4 ) )
     </env>
   </context>
   <globals>
     "useless" |-> var
-    ( string_type , opaque ( 2 ) )
+    ( string_type , opaque ( 4 ) )
   </globals>
   <store>
-    2 |-> ""
+    4 |-> ""
   </store>
   <storeBins>
     .Map

@@ -17,6 +17,19 @@
       .List
     </unscannedSubrs>
   </extrs>
+  <pendingImports>
+    .List
+  </pendingImports>
+  <units>
+    <unit>
+      <filepath>
+        "test/hello-var2.oro"
+      </filepath>
+      <subrs>
+        .Map
+      </subrs>
+    </unit>
+  </units>
   <extrinsicScopes>
     .Map
   </extrinsicScopes>
@@ -26,13 +39,16 @@
   <startup>
     true
   </startup>
+  <declScanInSubrs>
+    false
+  </declScanInSubrs>
   <context>
     <labels>
       yval ( | "?" | "nowhere" ) |-> jumpContext
       ( ( "Oro/Core/Flow/Label" |-> yval ( | "?" | "nowhere" ) ) ~> yseqToK ( .VarDecls ) ~>
         exitScope ( 0 , .Map ) ~> ( yval ( | "?" | "print" ) |-> "Hello, world!\n" ) , .Map
         , "useless" |-> var
-        ( int_type ( signed 32 ) , bytes ( 2 , 0 ) ) )
+        ( int_type ( signed 32 ) , bytes ( 3 , 0 ) ) )
     </labels>
     <env>
       .Map
@@ -40,10 +56,10 @@
   </context>
   <globals>
     "useless" |-> var
-    ( int_type ( signed 32 ) , bytes ( 2 , 0 ) )
+    ( int_type ( signed 32 ) , bytes ( 3 , 0 ) )
   </globals>
   <store>
-    2 |-> memory
+    3 |-> memory
     ( nil  ( nil  ( nil  ( nil  .Bytes ) ) ) / 4 )
   </store>
   <storeBins>
