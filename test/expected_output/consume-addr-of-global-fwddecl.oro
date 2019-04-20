@@ -9,7 +9,7 @@
       ( "consume address from variable" ) |-> subroutine ( 3 )
       ,
       .Map ) ~> yseqToK ( .VarDecls ) ~> exitScope ( 1 , "some global value" |-> var
-      ( string_type , opaque ( 4 ) ) ) ~> exitSubroutine ( SetItem ( "consume address" ) |->
+      ( string_type , opaque ( 6 ) ) ) ~> exitSubroutine ( SetItem ( "consume address" ) |->
       subroutine ( 2 )
       SetItem
       ( "consume address from variable" ) |-> subroutine ( 3 )
@@ -62,6 +62,21 @@
       .List
     </unscannedSubrs>
   </extrs>
+  <pendingImports>
+    .List
+  </pendingImports>
+  <units>
+    <unit>
+      <filepath>
+        "test/consume-addr-of-global-fwddecl.oro"
+      </filepath>
+      <subrs>
+        SetItem ( "consume address" ) |-> subroutine ( 2 )
+        SetItem
+        ( "consume address from variable" ) |-> subroutine ( 3 )
+      </subrs>
+    </unit>
+  </units>
   <extrinsicScopes>
     1 |-> ( SetItem ( "consume address" ) |-> subroutine ( 2 )
       SetItem
@@ -73,6 +88,9 @@
   <startup>
     false
   </startup>
+  <declScanInSubrs>
+    false
+  </declScanInSubrs>
   <context>
     <labels>
       .Map
@@ -84,14 +102,14 @@
   </context>
   <globals>
     "some global value" |-> var
-    ( string_type , opaque ( 4 ) )
+    ( string_type , opaque ( 6 ) )
   </globals>
   <store>
-    4 |-> ""
     17 |-> opaque_ptr
-    ( string_type , 4 )
+    ( string_type , 6 )
+    6 |-> ""
     19 |-> opaque_ptr
-    ( string_type , 4 )
+    ( string_type , 6 )
   </store>
   <storeBins>
     1 |-> ( 17 , .VarDecls )

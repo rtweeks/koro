@@ -64,7 +64,8 @@ module ORO-SEMANTICS-EXTRINSICS
         <extrinsicScopes>... (regextrNewScope |-> _) => .Map ...</extrinsicScopes>
         <unscannedSubrs> .List </unscannedSubrs>
 
-  rule  regextrScanBodies( .List ) => .
+  rule  <k>regextrScanBodies( .List ) => . ...</k>
+        <declScanInSubrs> _ => false </declScanInSubrs>
   rule  <k>regextrScanBodies( ListItem(SubrId:Int) Rest:List )
           =>  registerExtrinsics( Body )
               ~> regextrUpdateSubr( SubrId )
@@ -78,6 +79,7 @@ module ORO-SEMANTICS-EXTRINSICS
         ...</subr>
         <extrinsicScopes>... XSKey |-> XS' ...</extrinsicScopes>
         <extrinsics> XS => XS' </extrinsics>
+        <declScanInSubrs> _ => true </declScanInSubrs>
   rule  <k>regextrUpdateSubr( SubrId ) => . ...</k>
         <subr>...
           <id> SubrId </id>
@@ -179,12 +181,27 @@ module ORO-SEMANTICS-EXTRINSICS
         ~> subroutine-agg(Args; E; XS : Body)
       =>  Rest ~> subroutine-agg((D,Args); E; XS : Body)
   rule  <k>subroutine-agg(Args; E; XS : Body) => . ...</k>
+        <declScanInSubrs> false </declScanInSubrs>
         <sourceFile> CurrentUnit </sourceFile>
         <extrinsics>... .Map => varNames(Args) |-> subroutine( !SId )</extrinsics>
         <unit>
           <filepath> CurrentUnit </filepath>
           <subrs>... .Map => varNames(Args) |-> subroutine( !SId ) </subrs>
         </unit>
+        (.Bag => <subr>...
+          <id> !SId:Int </id>
+          <attrs>
+            "args" |-> Args
+            "env" |-> E
+            "extrScope" |-> XS
+          </attrs>
+          <body> Body </body>
+        ...</subr>)
+        <unscannedSubrs>... .List => ListItem(!SId) </unscannedSubrs>
+        // TODO: requires notOverridingIntrinsic(Args)
+  rule  <k>subroutine-agg(Args; E; XS : Body) => . ...</k>
+        <declScanInSubrs> true </declScanInSubrs>
+        <extrinsics>... .Map => varNames(Args) |-> subroutine( !SId )</extrinsics>
         (.Bag => <subr>...
           <id> !SId:Int </id>
           <attrs>
@@ -220,6 +237,7 @@ module ORO-SEMANTICS-EXTRINSICS
       =>  Rest
           ~> subroutine-returning-agg((D,Args) -> RetType; E; XS : Body)
   rule  <k>subroutine-returning-agg(Args -> RetType; E; XS : Body) => . ...</k>
+        <declScanInSubrs> false </declScanInSubrs>
         <sourceFile> CurrentUnit </sourceFile>
         <extrinsics>...
           .Map => varNames(Args) |-> subroutine( !SId )
@@ -228,6 +246,23 @@ module ORO-SEMANTICS-EXTRINSICS
           <filepath> CurrentUnit </filepath>
           <subrs>... .Map => varNames(Args) |-> subroutine( !SId ) </subrs>
         </unit>
+        (.Bag => <subr>...
+          <id> !SId:Int </id>
+          <attrs>
+            "args" |-> Args
+            "returns" |-> RetType
+            "env" |-> E
+            "extrScope" |-> XS
+          </attrs>
+          <body> Body </body>
+        ...</subr>)
+        <unscannedSubrs>... .List => ListItem(!SId) </unscannedSubrs>
+        // TODO: requires notOverridingIntrinsic(Args)
+  rule  <k>subroutine-returning-agg(Args -> RetType; E; XS : Body) => . ...</k>
+        <declScanInSubrs> true </declScanInSubrs>
+        <extrinsics>...
+          .Map => varNames(Args) |-> subroutine( !SId )
+        </extrinsics>
         (.Bag => <subr>...
           <id> !SId:Int </id>
           <attrs>

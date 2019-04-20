@@ -26,6 +26,7 @@ module ORO-SEMANTICS-COMMON
     <extrinsicScopes> .Map </extrinsicScopes>
     <scopeBin> 1 </scopeBin>
     <startup> true </startup>
+    <declScanInSubrs> false </declScanInSubrs>
     <context>
       <labels> .Map </labels>
       <env> .Map </env>

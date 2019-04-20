@@ -33,6 +33,19 @@
       .List
     </unscannedSubrs>
   </extrs>
+  <pendingImports>
+    .List
+  </pendingImports>
+  <units>
+    <unit>
+      <filepath>
+        "test/hello-subr.oro"
+      </filepath>
+      <subrs>
+        SetItem ( "\u6253\u5370" ) |-> subroutine ( 2 )
+      </subrs>
+    </unit>
+  </units>
   <extrinsicScopes>
     1 |-> ( SetItem ( "\u6253\u5370" ) |-> subroutine ( 2 ) )
   </extrinsicScopes>
@@ -42,6 +55,9 @@
   <startup>
     false
   </startup>
+  <declScanInSubrs>
+    false
+  </declScanInSubrs>
   <context>
     <labels>
       .Map
