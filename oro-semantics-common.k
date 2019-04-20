@@ -16,6 +16,12 @@ module ORO-SEMANTICS-COMMON
       </subr>
       <unscannedSubrs> .List </unscannedSubrs>
     </extrs>
+    <pendingImports> .List </pendingImports>
+    <units>
+      <unit multiplicity="*">
+        <filepath> "" </filepath>
+      </unit>
+    </units>
     <extrinsicScopes> .Map </extrinsicScopes>
     <scopeBin> 1 </scopeBin>
     <startup> true </startup>
@@ -57,6 +63,9 @@ module ORO-SEMANTICS-COMMON
 
   rule  <k>unpackSourcePath( . _ Val ) => . ...</k>
         <sourceFile> _ => Val </sourceFile>
+        (.Bag => <unit>...
+          <filepath>Val</filepath>
+        ...</unit>)
 
   rule  <k>yseqToK( .Datas ) => . ...</k>
   rule  <k>yseqToK( M:Map, Ds ) => M ~> yseqToK( Ds ) ...</k>
