@@ -199,6 +199,20 @@ module ORO-SEMANTICS-EXTRINSICS
         ...</subr>)
         <unscannedSubrs>... .List => ListItem(!SId) </unscannedSubrs>
         // TODO: requires notOverridingIntrinsic(Args)
+  rule  <k>subroutine-agg(Args; E; XS : Body) => . ...</k>
+        <declScanInSubrs> true </declScanInSubrs>
+        <extrinsics>... .Map => varNames(Args) |-> subroutine( !SId )</extrinsics>
+        (.Bag => <subr>...
+          <id> !SId:Int </id>
+          <attrs>
+            "args" |-> Args
+            "env" |-> E
+            "extrScope" |-> XS
+          </attrs>
+          <body> Body </body>
+        ...</subr>)
+        <unscannedSubrs>... .List => ListItem(!SId) </unscannedSubrs>
+        // TODO: requires notOverridingIntrinsic(Args)
   rule  <k>registerFun(
           ("Oro/Core/Subroutine/Define" |-> [ Args ])
           ("returning" |-> RetType:Data)
@@ -232,6 +246,23 @@ module ORO-SEMANTICS-EXTRINSICS
           <filepath> CurrentUnit </filepath>
           <subrs>... .Map => varNames(Args) |-> subroutine( !SId ) </subrs>
         </unit>
+        (.Bag => <subr>...
+          <id> !SId:Int </id>
+          <attrs>
+            "args" |-> Args
+            "returns" |-> RetType
+            "env" |-> E
+            "extrScope" |-> XS
+          </attrs>
+          <body> Body </body>
+        ...</subr>)
+        <unscannedSubrs>... .List => ListItem(!SId) </unscannedSubrs>
+        // TODO: requires notOverridingIntrinsic(Args)
+  rule  <k>subroutine-returning-agg(Args -> RetType; E; XS : Body) => . ...</k>
+        <declScanInSubrs> true </declScanInSubrs>
+        <extrinsics>...
+          .Map => varNames(Args) |-> subroutine( !SId )
+        </extrinsics>
         (.Bag => <subr>...
           <id> !SId:Int </id>
           <attrs>
