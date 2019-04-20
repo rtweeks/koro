@@ -181,6 +181,7 @@ module ORO-SEMANTICS-EXTRINSICS
         ~> subroutine-agg(Args; E; XS : Body)
       =>  Rest ~> subroutine-agg((D,Args); E; XS : Body)
   rule  <k>subroutine-agg(Args; E; XS : Body) => . ...</k>
+        <declScanInSubrs> false </declScanInSubrs>
         <sourceFile> CurrentUnit </sourceFile>
         <extrinsics>... .Map => varNames(Args) |-> subroutine( !SId )</extrinsics>
         <unit>
@@ -222,6 +223,7 @@ module ORO-SEMANTICS-EXTRINSICS
       =>  Rest
           ~> subroutine-returning-agg((D,Args) -> RetType; E; XS : Body)
   rule  <k>subroutine-returning-agg(Args -> RetType; E; XS : Body) => . ...</k>
+        <declScanInSubrs> false </declScanInSubrs>
         <sourceFile> CurrentUnit </sourceFile>
         <extrinsics>...
           .Map => varNames(Args) |-> subroutine( !SId )
