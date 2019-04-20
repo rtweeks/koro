@@ -258,6 +258,12 @@ module ORO-SEMANTICS-EXTRINSICS
           ~> subrImportToExtrinsics( #joinPath( #dirnamePath(CurrentUnit), RelativePath), .Map )
         ...</k>
         <sourceFile> CurrentUnit </sourceFile>
+  rule  subrImportAccumArg
+        ~> varDecl( Name : ArgType )
+        ~> Rest
+        ~> subrImportToExtrinsics( UP, M:Map )
+      =>  Rest
+          ~> subrImportToExtrinsics( UP, M[Name <- ArgType] )
   rule  <k>regextrResolveImports => . ...</k>
         <pendingImports> .List </pendingImports>
   // TODO: "Oro/Core/Macro/Use from"
