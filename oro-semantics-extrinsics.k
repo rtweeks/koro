@@ -64,7 +64,8 @@ module ORO-SEMANTICS-EXTRINSICS
         <extrinsicScopes>... (regextrNewScope |-> _) => .Map ...</extrinsicScopes>
         <unscannedSubrs> .List </unscannedSubrs>
 
-  rule  regextrScanBodies( .List ) => .
+  rule  <k>regextrScanBodies( .List ) => . ...</k>
+        <declScanInSubrs> _ => false </declScanInSubrs>
   rule  <k>regextrScanBodies( ListItem(SubrId:Int) Rest:List )
           =>  registerExtrinsics( Body )
               ~> regextrUpdateSubr( SubrId )
@@ -78,6 +79,7 @@ module ORO-SEMANTICS-EXTRINSICS
         ...</subr>
         <extrinsicScopes>... XSKey |-> XS' ...</extrinsicScopes>
         <extrinsics> XS => XS' </extrinsics>
+        <declScanInSubrs> _ => true </declScanInSubrs>
   rule  <k>regextrUpdateSubr( SubrId ) => . ...</k>
         <subr>...
           <id> SubrId </id>
