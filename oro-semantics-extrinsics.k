@@ -3,6 +3,7 @@ require "oro-semantics-intrinsics.k"
 require "oro-semantics-nsskeys.k"
 require "oro-semantics-types.k"
 require "oro-semantics-variables.k"
+require "file-path.k"
 
 module ORO-SEMANTICS-EXTRINSICS
   imports ORO-SEMANTICS-EXPRESSION
@@ -10,6 +11,7 @@ module ORO-SEMANTICS-EXTRINSICS
   imports ORO-SEMANTICS-NSSKEYS
   imports ORO-SEMANTICS-TYPES
   imports ORO-SEMANTICS-VARIABLES
+  imports FILE-PATH
 
   syntax K  ::= "registerExtrinsics" "(" K ")"
               | "regextrNewScope"
@@ -24,6 +26,7 @@ module ORO-SEMANTICS-EXTRINSICS
               | "registerSubr" "(" Map ")"
               | "subrReturns"
               | "subrAccumArg"
+              | "subrImportAccumArg"
               | "registerFun" "(" Map ")"
               | "nsskeyResolvedInFunArgs"
               | "registerImport" "(" Map ")"
@@ -239,6 +242,22 @@ module ORO-SEMANTICS-EXTRINSICS
         <unscannedSubrs>... .List => ListItem(!SId) </unscannedSubrs>
         // TODO: requires notOverridingIntrinsic(Args)
   // TODO: "Oro/Core/Subroutine/Import" "from"
+  rule  <k>registerImport(
+          ("Oro/Core/Subroutine/Import" |-> [ Args ])
+          ("from" |-> RelativePath:String )
+        ) =>
+          resolveTypes(Args, subrImportAccumArg)
+          ~> subrImportToExtrinsics( #joinPath( #dirnamePath(CurrentUnit), RelativePath), .Map )
+        ...</k>
+        <sourceFile> CurrentUnit </sourceFile>
+  rule  <k>registerImport(
+          ("Oro/Core/Subroutine/Import" |-> [ Args ])
+          ("from" |-> yval( |"?"| RelativePath:String ) )
+        ) =>
+          resolveTypes(Args, subrImportAccumArg)
+          ~> subrImportToExtrinsics( #joinPath( #dirnamePath(CurrentUnit), RelativePath), .Map )
+        ...</k>
+        <sourceFile> CurrentUnit </sourceFile>
   rule  <k>regextrResolveImports => . ...</k>
         <pendingImports> .List </pendingImports>
   // TODO: "Oro/Core/Macro/Use from"
@@ -246,6 +265,7 @@ module ORO-SEMANTICS-EXTRINSICS
   // Don't know why, but the <k>...</k> notation is required here for the disolve rules
   rule  <k>( "Oro/Core/Subroutine/Define" |-> _ "as" |-> _ ) => . ...</k>
   rule  <k>( "Oro/Core/Subroutine/Define" |-> _ "returning" |-> _ "as" |-> _ ) => . ...</k>
+  rule  <k>( "Oro/Core/Subroutine/Import" |-> _ "from" |-> _ ) => . ...</k>
   rule  <k>( "Oro/Core/Macro/Use from" |-> _ ) => . ...</k>
 
   syntax K  ::= "subrCall" "(" K /* Args:VarDecls */ ";" K /* E:Map */ ";" K /* XSKey:Int */ ";" K /* Body:K */ ";" Map /* Call */ ")"
