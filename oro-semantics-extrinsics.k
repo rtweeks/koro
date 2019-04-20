@@ -53,14 +53,13 @@ module ORO-SEMANTICS-EXTRINSICS
         ...</k>
   rule  <k>regextrNewScope => . ...</k>
         <extrinsicScopes>... .Map => regextrNewScope |-> !Scope:Int </extrinsicScopes>
-  rule  <k>regextrCaptureScope => regextrScanBodies( NewSubrs ) ...</k>
+  rule  <k>regextrCaptureScope => regextrScanBodies( ListItem(S1) Ss ) ...</k>
         <extrinsics> XS </extrinsics>
         <subr>...
           <attrs>... "extrScope" |-> XSKey ...</attrs>
         ...</subr>
         <extrinsicScopes>... (regextrNewScope |-> XSKey) => (XSKey |-> XS) ...</extrinsicScopes>
-        <unscannedSubrs> NewSubrs => .List </unscannedSubrs>
-        requires size(NewSubrs) >Int 0
+        <unscannedSubrs> (ListItem(S1) Ss:List) => .List </unscannedSubrs>
   rule  <k>regextrCaptureScope => . ...</k>
         <extrinsicScopes>... (regextrNewScope |-> _) => .Map ...</extrinsicScopes>
         <unscannedSubrs> .List </unscannedSubrs>
