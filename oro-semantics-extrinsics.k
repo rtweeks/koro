@@ -14,6 +14,7 @@ module ORO-SEMANTICS-EXTRINSICS
   syntax K  ::= "registerExtrinsics" "(" K ")"
               | "regextrNewScope"
               | "regextr" "(" K ")"
+              | "regextrResolveImports"
               | "regextrCaptureScope"
               | "regextrScanBodies" "(" List ")"
               | "regextrUpdateSubr" "(" Int ")"
@@ -27,6 +28,7 @@ module ORO-SEMANTICS-EXTRINSICS
               | "nsskeyResolvedInFunArgs"
               | "registerImport" "(" Map ")"
               | "loadMacros" "(" Map ")"
+              | SubroutineImportDetails
               | Subroutine
               | StatementCallableAgg
 
@@ -38,10 +40,12 @@ module ORO-SEMANTICS-EXTRINSICS
   syntax Subroutine ::= "subroutine" "(" Int /* <subr> <id> N </id> </subr> */ ")"
   syntax StatementCallableAgg ::= "subroutine-agg" "(" VarDecls ";" Map ";" Int ":" K ")"
                                 | "subroutine-returning-agg" "(" VarDecls "->" DataType ";" Map ";" Int ":" K ")"
+  syntax SubroutineImportDetails  ::= "subrImportToExtrinsics" "(" String /* RelativePath */ "," Map ")"
 
   rule  <k>registerExtrinsics( Stmts )
           =>  regextrNewScope
               ~> regextr( Stmts )
+              ~> regextrResolveImports    /* Imports kicked to here to allow registration of all extrinsics from the current unit */
               ~> regextrCaptureScope
         ...</k>
   rule  <k>regextrNewScope => . ...</k>
@@ -235,6 +239,8 @@ module ORO-SEMANTICS-EXTRINSICS
         <unscannedSubrs>... .List => ListItem(!SId) </unscannedSubrs>
         // TODO: requires notOverridingIntrinsic(Args)
   // TODO: "Oro/Core/Subroutine/Import" "from"
+  rule  <k>regextrResolveImports => . ...</k>
+        <pendingImports> .List </pendingImports>
   // TODO: "Oro/Core/Macro/Use from"
 
   // Don't know why, but the <k>...</k> notation is required here for the disolve rules
