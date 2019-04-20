@@ -264,6 +264,8 @@ module ORO-SEMANTICS-EXTRINSICS
         ~> subrImportToExtrinsics( UP, M:Map )
       =>  Rest
           ~> subrImportToExtrinsics( UP, M[Name <- ArgType] )
+  rule  <k>I:SubroutineImportDetails => . ...</k>
+        <pendingImports>... .List => ListItem(I) </pendingImports>
   rule  <k>regextrResolveImports => . ...</k>
         <pendingImports> .List </pendingImports>
   // TODO: "Oro/Core/Macro/Use from"
