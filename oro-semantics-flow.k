@@ -61,7 +61,7 @@ module ORO-SEMANTICS-FLOW
   rule  forwardJump( D ) ~> flowResolvedStmt(.Map) => forwardJump( D )
   rule  forwardJump( D ) ~> yseqToK(.Datas) => forwardJump( D )
   rule  forwardJump( D ) ~> yseqToK(S,Ss) => forwardJump( D ) ~> S ~> yseqToK(Ss)
-  rule  forwardJump( D ) ~> exitScope( B, E ) => exitScope( B, E ) ~> forwardJump( D )
+  rule  forwardJump( D ) ~> exitScope( B, E, S ) => exitScope( B, E, S ) ~> forwardJump( D )
   rule  flowResolvedStmt( S ) => S
 
 endmodule

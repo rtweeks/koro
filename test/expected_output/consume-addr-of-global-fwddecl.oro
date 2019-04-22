@@ -3,18 +3,20 @@
     ( [ "Oro/CoreLib/Set" , ( ( "base type" |-> "string" ) , ( "empty at" , .VarDecls ) ) ]
       |-> yval ( | "?" | "consume address from variable" ) ) ~> yseqToK ( .VarDecls ) ~> exitScope
     ( 2 , "consume address" |-> var
-      ( memaddr_type , opaque ( 17 ) ) ) ~> exitSubroutine ( SetItem ( "consume address" )
-      |-> subroutine ( 2 )
+      ( memaddr_type , opaque ( 17 ) )
+      ,
+      false ) ~> exitSubroutine ( SetItem ( "consume address" ) |-> subroutine ( 2 )
       SetItem
       ( "consume address from variable" ) |-> subroutine ( 3 )
       ,
       .Map ) ~> yseqToK ( .VarDecls ) ~> exitScope ( 1 , "some global value" |-> var
-      ( string_type , opaque ( 6 ) ) ) ~> exitSubroutine ( SetItem ( "consume address" ) |->
-      subroutine ( 2 )
+      ( string_type , opaque ( 6 ) )
+      ,
+      true ) ~> exitSubroutine ( SetItem ( "consume address" ) |-> subroutine ( 2 )
       SetItem
       ( "consume address from variable" ) |-> subroutine ( 3 )
       ,
-      .Map ) ~> yseqToK ( .VarDecls ) ~> exitScope ( 0 , .Map )
+      .Map ) ~> yseqToK ( .VarDecls ) ~> exitScope ( 0 , .Map , true )
   </k>
   <sourceFile>
     "test/consume-addr-of-global-fwddecl.oro"

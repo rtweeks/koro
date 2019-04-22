@@ -522,13 +522,14 @@ module ORO-SEMANTICS-EXTRINSICS
             ~> enterScope(Args, ScopeBin)
             ~> assignArguments(ArgVals)
             ~> Body
-            ~> exitScope(ScopeBin, E)
+            ~> exitScope(ScopeBin, E, ReturnToStartup)
             ~> exitSubroutine(XS, L) ...</k>
         <scopeBin> ScopeBin => ScopeBin +Int 1 </scopeBin>
         <storeBins>... .Map => (ScopeBin |-> .Ints) ...</storeBins>
         <env> E </env>
         <extrinsics> XS </extrinsics>
         <labels> L </labels>
+        <startup> ReturnToStartup </startup>
 
   syntax K  ::= "captureSubroutineResult" "(" K ")"
   rule  <k>executeReturningSubroutine(Args, ArgVals, E', XS', Body, Tag) =>
@@ -538,7 +539,7 @@ module ORO-SEMANTICS-EXTRINSICS
             ~> assignArguments(ArgVals)
             ~> Body
             ~> captureSubroutineResult(
-              exitScope(ScopeBin, E)
+              exitScope(ScopeBin, E, ReturnToStartup)
               ~> exitSubroutine(XS, L)
               ~> Tag
             )
@@ -548,6 +549,7 @@ module ORO-SEMANTICS-EXTRINSICS
         <env> E </env>
         <extrinsics> XS </extrinsics>
         <labels> L </labels>
+        <startup> ReturnToStartup </startup>
 
   rule  <k>enterSubroutine( XS, E ) => . ...</k>
         <env> _ => E </env>

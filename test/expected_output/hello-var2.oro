@@ -46,8 +46,8 @@
     <labels>
       yval ( | "?" | "nowhere" ) |-> jumpContext
       ( ( "Oro/Core/Flow/Label" |-> yval ( | "?" | "nowhere" ) ) ~> yseqToK ( .VarDecls ) ~>
-        exitScope ( 0 , .Map ) ~> ( yval ( | "?" | "print" ) |-> "Hello, world!\n" ) , .Map
-        , "useless" |-> var
+        exitScope ( 0 , .Map , true ) ~> ( yval ( | "?" | "print" ) |-> "Hello, world!\n" )
+        , .Map , "useless" |-> var
         ( int_type ( signed 32 ) , bytes ( 3 , 0 ) ) )
     </labels>
     <env>

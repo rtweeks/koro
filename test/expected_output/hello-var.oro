@@ -1,6 +1,7 @@
 <T>
   <k>
-    ( "print" |-> "Hello, world!\n" ) ~> yseqToK ( .VarDecls ) ~> exitScope ( 0 , .Map )
+    ( "print" |-> "Hello, world!\n" ) ~> yseqToK ( .VarDecls ) ~> exitScope ( 0 , .Map , true
+      )
   </k>
   <sourceFile>
     "test/hello-var.oro"

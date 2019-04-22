@@ -58,7 +58,7 @@
     3
   </scopeBin>
   <startup>
-    false
+    true
   </startup>
   <declScanInSubrs>
     false

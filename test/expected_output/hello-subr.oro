@@ -1,7 +1,7 @@
 <T>
   <k>
     ( "print" |-> yval ( | "?" | "\u6253\u5370" ) ) ~> yseqToK ( .VarDecls ) ~> exitScope (
-      1 , .Map ) ~> exitSubroutine ( SetItem ( "\u6253\u5370" ) |-> subroutine ( 2 )
+      1 , .Map , true ) ~> exitSubroutine ( SetItem ( "\u6253\u5370" ) |-> subroutine ( 2 )
       ,
       .Map )
   </k>
