@@ -26,7 +26,9 @@ module ORO-SEMANTICS-EXTRINSICS
               | "registerSubr" "(" Map ")"
               | "subrReturns"
               | "subrAccumArg"
+              | "subrImportReturns"
               | "subrImportAccumArg"
+              | "subrRetImportAccumArg"
               | "registerFun" "(" Map ")"
               | "nsskeyResolvedInFunArgs"
               | "registerImport" "(" Map ")"
@@ -45,6 +47,7 @@ module ORO-SEMANTICS-EXTRINSICS
   syntax StatementCallableAgg ::= "subroutine-agg" "(" VarDecls ";" Map ";" Int ":" K ")"
                                 | "subroutine-returning-agg" "(" VarDecls "->" DataType ";" Map ";" Int ":" K ")"
   syntax SubroutineImportDetails  ::= "subrImportToExtrinsics" "(" String /* RelativePath */ "," Map ")"
+                                    | "subrRetImportToExtrinsics" "(" String /* RelativePath */ "," Map "->" DataType ")"
 
   rule  <k>registerExtrinsics( Stmts )
           =>  regextrNewScope
@@ -287,9 +290,29 @@ module ORO-SEMANTICS-EXTRINSICS
         <sourceFile> CurrentUnit </sourceFile>
   rule  <k>registerImport(
           ("Oro/Core/Subroutine/Import" |-> [ Args ])
+          ("returning" |-> RetType)
+          ("from" |-> RelativePath:String )
+        ) =>
+          resolveType(RetType, subrImportReturns)
+          ~> resolveTypes(Args, subrRetImportAccumArg)
+          ~> subrImportToExtrinsics( #joinPath( #dirnamePath(CurrentUnit), RelativePath), .Map )
+        ...</k>
+        <sourceFile> CurrentUnit </sourceFile>
+  rule  <k>registerImport(
+          ("Oro/Core/Subroutine/Import" |-> [ Args ])
           ("from" |-> yval( |"?"| RelativePath:String ) )
         ) =>
           resolveTypes(Args, subrImportAccumArg)
+          ~> subrImportToExtrinsics( #joinPath( #dirnamePath(CurrentUnit), RelativePath), .Map )
+        ...</k>
+        <sourceFile> CurrentUnit </sourceFile>
+  rule  <k>registerImport(
+          ("Oro/Core/Subroutine/Import" |-> [ Args ])
+          ("returning" |-> RetType)
+          ("from" |-> yval( |"?"| RelativePath:String ) )
+        ) =>
+          resolveType(RetType, subrImportReturns)
+          ~> resolveTypes(Args, subrRetImportAccumArg)
           ~> subrImportToExtrinsics( #joinPath( #dirnamePath(CurrentUnit), RelativePath), .Map )
         ...</k>
         <sourceFile> CurrentUnit </sourceFile>
@@ -299,6 +322,18 @@ module ORO-SEMANTICS-EXTRINSICS
         ~> subrImportToExtrinsics( UP, M:Map )
       =>  Rest
           ~> subrImportToExtrinsics( UP, M[Name <- ArgType] )
+  rule  subrImportReturns
+        ~> RetType:DataType
+        ~> ArgResolution
+        ~> subrImportToExtrinsics( UnitPath, .Map )
+      =>  ArgResolution
+          ~> subrRetImportToExtrinsics( UnitPath, .Map -> RetType )
+  rule  subrRetImportAccumArg
+        ~> varDecl( Name : ArgType )
+        ~> Rest
+        ~> subrRetImportToExtrinsics( UP, M:Map -> RetType )
+      =>  Rest
+          ~> subrRetImportToExtrinsics( UP, M[Name <- ArgType] -> RetType )
   rule  <k>I:SubroutineImportDetails => . ...</k>
         <pendingImports>... .List => ListItem(I) </pendingImports>
   rule  <k>regextrResolveImports => . ...</k>

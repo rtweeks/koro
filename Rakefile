@@ -12,7 +12,9 @@ FileList['*.k'].each do |src|
 end
 
 file KORO_TIMESTAMP do
-  sh "kompile --backend #{K_BACKEND} oro.k"
+  #env = ENV.to_h.merge('K_OPTS' => "-Xmx2048m")
+  env = {'K_OPTS' => '-Xmx2048m'}
+  sh env, "kompile --backend #{K_BACKEND} oro.k"
 end
 
 def oro_parser_stack
