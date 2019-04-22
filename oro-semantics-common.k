@@ -4,7 +4,8 @@ module ORO-SEMANTICS-COMMON
   imports ORO-SEMANTICS-SYNTAX
 
   configuration <T>
-    <k> readSourceSeq( $PGM:Sequence ) </k>
+    <k> unpackSourcePath( $MFPATH:Scalar ) ~> readSourceSeq( $PGM:Sequence ) </k>
+    <sourceFile> "" </sourceFile>
     <refs> .Map </refs>
     <extrinsics> .Map </extrinsics>
     <extrs>
@@ -15,9 +16,17 @@ module ORO-SEMANTICS-COMMON
       </subr>
       <unscannedSubrs> .List </unscannedSubrs>
     </extrs>
+    <pendingImports> .List </pendingImports>
+    <units>
+      <unit multiplicity="*">
+        <filepath> "" </filepath>
+        <subrs> .Map </subrs>
+      </unit>
+    </units>
     <extrinsicScopes> .Map </extrinsicScopes>
     <scopeBin> 1 </scopeBin>
     <startup> true </startup>
+    <declScanInSubrs> false </declScanInSubrs>
     <context>
       <labels> .Map </labels>
       <env> .Map </env>
@@ -33,7 +42,8 @@ module ORO-SEMANTICS-COMMON
                       | "endian"
   syntax Endianness ::= "little"
                       | "big"
-  syntax K  ::= "readSourceSeq" "(" Sequence ")"
+  syntax K  ::= "unpackSourcePath" "(" Scalar ")"
+              | "readSourceSeq" "(" Sequence ")"              [function]
               | "yseqToK" "(" Datas ")"                       [macro]
               | "invalidPointer"
 
@@ -52,6 +62,12 @@ module ORO-SEMANTICS-COMMON
   syntax Datas      ::= List{Data, ","}
                       | "datasOfYseq" "(" YamlSeq ")"         [function]
   syntax Ints ::= List{Int, ","}
+
+  rule  <k>unpackSourcePath( . _ Val ) => . ...</k>
+        <sourceFile> _ => Val </sourceFile>
+        (.Bag => <unit>...
+          <filepath>Val</filepath>
+        ...</unit>)
 
   rule  <k>yseqToK( .Datas ) => . ...</k>
   rule  <k>yseqToK( M:Map, Ds ) => M ~> yseqToK( Ds ) ...</k>

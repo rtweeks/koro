@@ -8,6 +8,7 @@ module ORO-SEMANTICS-INTRINSICS
                 | "skeysDefineSubr"               [function]
                 | "skeysDefineFun"                [function]
                 | "skeysImportFrom"               [function]
+                | "skeysImportReturningFrom"      [function]
                 | "skeysUseMacros"                [function]
                 | "skeysLabel"                    [function]
                 | "skeysDo"                       [function]
@@ -31,6 +32,12 @@ module ORO-SEMANTICS-INTRINSICS
 
   rule skeysImportFrom => (
     SetItem("Oro/Core/Subroutine/Import")
+    SetItem("from")
+  )
+
+  rule skeysImportReturningFrom => (
+    SetItem("Oro/Core/Subroutine/Import")
+    SetItem("returning")
     SetItem("from")
   )
 
@@ -66,6 +73,7 @@ module ORO-SEMANTICS-INTRINSICS
     SetItem( skeysDefineSubr )
     SetItem( skeysDefineFun )
     SetItem( skeysImportFrom )
+    SetItem( skeysImportReturningFrom )
     SetItem( SetItem("Oro/Core/Subroutine/Abstract") )
     SetItem( SetItem("Oro/Core/Subroutine/Indirectly invoke") SetItem("with") )
 

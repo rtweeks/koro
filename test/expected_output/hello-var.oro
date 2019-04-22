@@ -2,6 +2,9 @@
   <k>
     ( "print" |-> "Hello, world!\n" ) ~> yseqToK ( .VarDecls ) ~> exitScope ( 0 , .Map )
   </k>
+  <sourceFile>
+    "test/hello-var.oro"
+  </sourceFile>
   <refs>
     .Map
   </refs>
@@ -14,6 +17,19 @@
       .List
     </unscannedSubrs>
   </extrs>
+  <pendingImports>
+    .List
+  </pendingImports>
+  <units>
+    <unit>
+      <filepath>
+        "test/hello-var.oro"
+      </filepath>
+      <subrs>
+        .Map
+      </subrs>
+    </unit>
+  </units>
   <extrinsicScopes>
     .Map
   </extrinsicScopes>
@@ -23,21 +39,24 @@
   <startup>
     true
   </startup>
+  <declScanInSubrs>
+    false
+  </declScanInSubrs>
   <context>
     <labels>
       .Map
     </labels>
     <env>
       "useless" |-> var
-      ( string_type , opaque ( 3 ) )
+      ( string_type , opaque ( 4 ) )
     </env>
   </context>
   <globals>
     "useless" |-> var
-    ( string_type , opaque ( 3 ) )
+    ( string_type , opaque ( 4 ) )
   </globals>
   <store>
-    3 |-> ""
+    4 |-> ""
   </store>
   <storeBins>
     .Map

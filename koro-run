@@ -2,10 +2,12 @@
 
 : ${ORO_WORDSIZE:=64}
 : ${ORO_ENDIAN:=little}
+RUN_ARGS=("$@")
 
 # TODO: Load the <arch> in the configuration with machine architecture
 #  -cARCH="wordSize|->$ORO_WORDSIZE endian|->$ORO_ENDIAN" \
 
 krun \
   --parser "$(dirname "$0")/parser.sh" \
+  -pMFPATH="$(dirname "$0")/parser.sh --encode" -cMFPATH="${RUN_ARGS[-1]}" \
   "$@" \

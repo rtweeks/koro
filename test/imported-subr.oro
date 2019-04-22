@@ -1,0 +1,5 @@
+- Oro/Core/Subroutine/Import:
+  - {argument: fluff, as: string}
+  from: subr.oro
+
+- fluff: "*"

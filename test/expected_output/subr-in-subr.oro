@@ -2,6 +2,9 @@
   <k>
     .
   </k>
+  <sourceFile>
+    "test/subr-in-subr.oro"
+  </sourceFile>
   <refs>
     .Map
   </refs>
@@ -45,6 +48,19 @@
       .List
     </unscannedSubrs>
   </extrs>
+  <pendingImports>
+    .List
+  </pendingImports>
+  <units>
+    <unit>
+      <filepath>
+        "test/subr-in-subr.oro"
+      </filepath>
+      <subrs>
+        SetItem ( "fluff" ) |-> subroutine ( 2 )
+      </subrs>
+    </unit>
+  </units>
   <extrinsicScopes>
     1 |-> ( SetItem ( "fluff" ) |-> subroutine ( 2 ) )
     3 |-> ( SetItem ( "gaze at" ) |-> subroutine ( 4 )
@@ -60,6 +76,9 @@
   <startup>
     true
   </startup>
+  <declScanInSubrs>
+    false
+  </declScanInSubrs>
   <context>
     <labels>
       .Map
@@ -75,8 +94,8 @@
     .Map
   </store>
   <storeBins>
-    1 |-> ( 8 , .VarDecls )
-    2 |-> ( 10 , .VarDecls )
+    1 |-> ( 9 , .VarDecls )
+    2 |-> ( 11 , .VarDecls )
   </storeBins>
   <arch>
     wordSize |-> 64

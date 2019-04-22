@@ -2,6 +2,9 @@
   <k>
     "print" |-> "Hello, world!\n"
   </k>
+  <sourceFile>
+    "test/hello-nested-seq.oro"
+  </sourceFile>
   <refs>
     .Map
   </refs>
@@ -14,6 +17,19 @@
       .List
     </unscannedSubrs>
   </extrs>
+  <pendingImports>
+    .List
+  </pendingImports>
+  <units>
+    <unit>
+      <filepath>
+        "test/hello-nested-seq.oro"
+      </filepath>
+      <subrs>
+        .Map
+      </subrs>
+    </unit>
+  </units>
   <extrinsicScopes>
     .Map
   </extrinsicScopes>
@@ -23,6 +39,9 @@
   <startup>
     true
   </startup>
+  <declScanInSubrs>
+    false
+  </declScanInSubrs>
   <context>
     <labels>
       .Map

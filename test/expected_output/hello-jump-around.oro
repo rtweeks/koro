@@ -6,6 +6,9 @@
         "?" | "backward jump" ) ) ~> ( yval ( | "?" | "Oro/Core/Flow/Label" ) |-> yval ( |
         "?" | "end" ) )
   </k>
+  <sourceFile>
+    "test/hello-jump-around.oro"
+  </sourceFile>
   <refs>
     .Map
   </refs>
@@ -18,6 +21,19 @@
       .List
     </unscannedSubrs>
   </extrs>
+  <pendingImports>
+    .List
+  </pendingImports>
+  <units>
+    <unit>
+      <filepath>
+        "test/hello-jump-around.oro"
+      </filepath>
+      <subrs>
+        .Map
+      </subrs>
+    </unit>
+  </units>
   <extrinsicScopes>
     .Map
   </extrinsicScopes>
@@ -27,6 +43,9 @@
   <startup>
     true
   </startup>
+  <declScanInSubrs>
+    false
+  </declScanInSubrs>
   <context>
     <labels>
       yval ( | "?" | "backward jump" ) |-> jumpContext

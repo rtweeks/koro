@@ -12,7 +12,9 @@ FileList['*.k'].each do |src|
 end
 
 file KORO_TIMESTAMP do
-  sh "kompile --backend #{K_BACKEND} oro.k"
+  #env = ENV.to_h.merge('K_OPTS' => "-Xmx2048m")
+  env = {'K_OPTS' => '-Xmx2048m'}
+  sh env, "kompile --backend #{K_BACKEND} oro.k"
 end
 
 def oro_parser_stack
@@ -32,8 +34,13 @@ file oro_parser_exe => FileList['oro-parser/**/*.hs'].exclude(%r{/test/}).to_a d
   sh %Q{stack --stack-yaml #{oro_parser_stack} build}
 end
 
+namespace :build do
+  desc "Build the Oro YAML -> kast tool (./parser.sh)"
+  task :parser => [oro_parser_exe]
+end
+
 desc "Build the Oro executable semantic interpreter"
-task :build => [KORO_TIMESTAMP, oro_parser_exe]
+task :build => [KORO_TIMESTAMP, 'build:parser']
 
 namespace :test do
   desc "Test one case"

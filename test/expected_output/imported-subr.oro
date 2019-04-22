@@ -1,22 +1,31 @@
 <T>
   <k>
-    ( "print" |-> "Your name: " ) ~> ( yval ( | "?" | "print" ) |-> ( yval ( | "?" | "catenate"
-          ) |-> "Hello, " yval
-        ( | "?" | "with" ) |-> ( yval ( | "?" | "catenate" ) |-> ( yval ( | "?" | "read until"
-              ) |-> "\n" ) yval
-          ( | "?" | "with" ) |-> ".\n" ) ) )
+    .
   </k>
   <sourceFile>
-    "test/hello3.oro"
+    "test/imported-subr.oro"
   </sourceFile>
   <refs>
     .Map
   </refs>
   <extrinsics>
-    .Map
+    SetItem ( "fluff" ) |-> subroutine ( 3 )
   </extrinsics>
   <extrs>
-    .SubrCellBag
+    <subr>
+      <id>
+        3
+      </id>
+      <attrs>
+        "args" |-> ( varDecl ( "fluff" : string_type ) , .VarDecls )
+        "env" |-> ( .Map )
+        "extrScope" |-> 2
+      </attrs>
+      <body>
+        yseqToK ( ( yval ( | "?" | "Oro/Core/Flow/Label" ) |-> yval ( | "?" | "nowhere" ) )
+          , .VarDecls )
+      </body>
+    </subr>
     <unscannedSubrs>
       .List
     </unscannedSubrs>
@@ -27,7 +36,15 @@
   <units>
     <unit>
       <filepath>
-        "test/hello3.oro"
+        "test/subr.oro"
+      </filepath>
+      <subrs>
+        SetItem ( "fluff" ) |-> subroutine ( 3 )
+      </subrs>
+    </unit>
+    <unit>
+      <filepath>
+        "test/imported-subr.oro"
       </filepath>
       <subrs>
         .Map
@@ -35,13 +52,13 @@
     </unit>
   </units>
   <extrinsicScopes>
-    .Map
+    2 |-> ( SetItem ( "fluff" ) |-> subroutine ( 3 ) )
   </extrinsicScopes>
   <scopeBin>
-    1
+    3
   </scopeBin>
   <startup>
-    true
+    false
   </startup>
   <declScanInSubrs>
     false
@@ -61,7 +78,8 @@
     .Map
   </store>
   <storeBins>
-    .Map
+    1 |-> ( 7 , .VarDecls )
+    2 |-> ( 9 , .VarDecls )
   </storeBins>
   <arch>
     wordSize |-> 64

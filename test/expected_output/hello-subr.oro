@@ -5,6 +5,9 @@
       ,
       .Map )
   </k>
+  <sourceFile>
+    "test/hello-subr.oro"
+  </sourceFile>
   <refs>
     .Map
   </refs>
@@ -30,6 +33,19 @@
       .List
     </unscannedSubrs>
   </extrs>
+  <pendingImports>
+    .List
+  </pendingImports>
+  <units>
+    <unit>
+      <filepath>
+        "test/hello-subr.oro"
+      </filepath>
+      <subrs>
+        SetItem ( "\u6253\u5370" ) |-> subroutine ( 2 )
+      </subrs>
+    </unit>
+  </units>
   <extrinsicScopes>
     1 |-> ( SetItem ( "\u6253\u5370" ) |-> subroutine ( 2 ) )
   </extrinsicScopes>
@@ -39,23 +55,26 @@
   <startup>
     false
   </startup>
+  <declScanInSubrs>
+    false
+  </declScanInSubrs>
   <context>
     <labels>
       .Map
     </labels>
     <env>
       "\u6253\u5370" |-> var
-      ( string_type , opaque ( 5 ) )
+      ( string_type , opaque ( 6 ) )
     </env>
   </context>
   <globals>
     .Map
   </globals>
   <store>
-    5 |-> "\u4f60\u597d\uff0c\u4e16\u754c\u3002\n"
+    6 |-> "\u4f60\u597d\uff0c\u4e16\u754c\u3002\n"
   </store>
   <storeBins>
-    1 |-> ( 5 , .VarDecls )
+    1 |-> ( 6 , .VarDecls )
   </storeBins>
   <arch>
     wordSize |-> 64

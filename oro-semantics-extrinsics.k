@@ -3,6 +3,7 @@ require "oro-semantics-intrinsics.k"
 require "oro-semantics-nsskeys.k"
 require "oro-semantics-types.k"
 require "oro-semantics-variables.k"
+require "file-path.k"
 
 module ORO-SEMANTICS-EXTRINSICS
   imports ORO-SEMANTICS-EXPRESSION
@@ -10,10 +11,12 @@ module ORO-SEMANTICS-EXTRINSICS
   imports ORO-SEMANTICS-NSSKEYS
   imports ORO-SEMANTICS-TYPES
   imports ORO-SEMANTICS-VARIABLES
+  imports FILE-PATH
 
   syntax K  ::= "registerExtrinsics" "(" K ")"
               | "regextrNewScope"
               | "regextr" "(" K ")"
+              | "regextrResolveImports"
               | "regextrCaptureScope"
               | "regextrScanBodies" "(" List ")"
               | "regextrUpdateSubr" "(" Int ")"
@@ -23,10 +26,15 @@ module ORO-SEMANTICS-EXTRINSICS
               | "registerSubr" "(" Map ")"
               | "subrReturns"
               | "subrAccumArg"
+              | "subrImportReturns"
+              | "subrImportAccumArg"
+              | "subrRetImportAccumArg"
               | "registerFun" "(" Map ")"
               | "nsskeyResolvedInFunArgs"
-              | "registerImports" "(" Map ")"
+              | "registerImport" "(" Map ")"
+              | "loadUnitFromYaml" "(" K "," RestoreLoadUnit ")"         [function]
               | "loadMacros" "(" Map ")"
+              | SubroutineImportDetails
               | Subroutine
               | StatementCallableAgg
 
@@ -38,26 +46,30 @@ module ORO-SEMANTICS-EXTRINSICS
   syntax Subroutine ::= "subroutine" "(" Int /* <subr> <id> N </id> </subr> */ ")"
   syntax StatementCallableAgg ::= "subroutine-agg" "(" VarDecls ";" Map ";" Int ":" K ")"
                                 | "subroutine-returning-agg" "(" VarDecls "->" DataType ";" Map ";" Int ":" K ")"
+  syntax SubroutineImportDetails  ::= "subrImportToExtrinsics" "(" String /* RelativePath */ "," Map ")"
+                                    | "subrRetImportToExtrinsics" "(" String /* RelativePath */ "," Map "->" DataType ")"
 
   rule  <k>registerExtrinsics( Stmts )
           =>  regextrNewScope
               ~> regextr( Stmts )
+              ~> regextrResolveImports    /* Imports kicked to here to allow registration of all extrinsics from the current unit */
               ~> regextrCaptureScope
         ...</k>
   rule  <k>regextrNewScope => . ...</k>
         <extrinsicScopes>... .Map => regextrNewScope |-> !Scope:Int </extrinsicScopes>
-  rule  <k>regextrCaptureScope => regextrScanBodies( NewSubrs ) ...</k>
+  rule  <k>regextrCaptureScope => regextrScanBodies( ListItem(S1) Ss ) ...</k>
         <extrinsics> XS </extrinsics>
         <subr>...
           <attrs>... "extrScope" |-> XSKey ...</attrs>
         ...</subr>
         <extrinsicScopes>... (regextrNewScope |-> XSKey) => (XSKey |-> XS) ...</extrinsicScopes>
-        <unscannedSubrs> NewSubrs => .List </unscannedSubrs>
+        <unscannedSubrs> (ListItem(S1) Ss:List) => .List </unscannedSubrs>
   rule  <k>regextrCaptureScope => . ...</k>
         <extrinsicScopes>... (regextrNewScope |-> _) => .Map ...</extrinsicScopes>
         <unscannedSubrs> .List </unscannedSubrs>
 
-  rule  regextrScanBodies( .List ) => .
+  rule  <k>regextrScanBodies( .List ) => . ...</k>
+        <declScanInSubrs> _ => false </declScanInSubrs>
   rule  <k>regextrScanBodies( ListItem(SubrId:Int) Rest:List )
           =>  registerExtrinsics( Body )
               ~> regextrUpdateSubr( SubrId )
@@ -71,6 +83,7 @@ module ORO-SEMANTICS-EXTRINSICS
         ...</subr>
         <extrinsicScopes>... XSKey |-> XS' ...</extrinsicScopes>
         <extrinsics> XS => XS' </extrinsics>
+        <declScanInSubrs> _ => true </declScanInSubrs>
   rule  <k>regextrUpdateSubr( SubrId ) => . ...</k>
         <subr>...
           <id> SubrId </id>
@@ -109,8 +122,9 @@ module ORO-SEMANTICS-EXTRINSICS
         requires  keys(M) in SetItem(skeysDefineSubr)
   rule  registerResolvedExtrinsic( M ) => registerFun( M )
         requires  keys(M) in SetItem(skeysDefineFun)
-  rule  registerResolvedExtrinsic( M ) => registerImports( M )
+  rule  registerResolvedExtrinsic( M ) => registerImport( M )
         requires  keys(M) in SetItem(skeysImportFrom)
+        orBool    keys(M) in SetItem(skeysImportReturningFrom)
   rule  registerResolvedExtrinsic( M ) => loadMacros( M )
         requires  keys(M) in SetItem(skeysUseMacros)
   syntax K  ::= "extrinsicRegistrationWithVars"
@@ -171,6 +185,26 @@ module ORO-SEMANTICS-EXTRINSICS
         ~> subroutine-agg(Args; E; XS : Body)
       =>  Rest ~> subroutine-agg((D,Args); E; XS : Body)
   rule  <k>subroutine-agg(Args; E; XS : Body) => . ...</k>
+        <declScanInSubrs> false </declScanInSubrs>
+        <sourceFile> CurrentUnit </sourceFile>
+        <extrinsics>... .Map => varNames(Args) |-> subroutine( !SId )</extrinsics>
+        <unit>
+          <filepath> CurrentUnit </filepath>
+          <subrs>... .Map => varNames(Args) |-> subroutine( !SId ) </subrs>
+        </unit>
+        (.Bag => <subr>...
+          <id> !SId:Int </id>
+          <attrs>
+            "args" |-> Args
+            "env" |-> E
+            "extrScope" |-> XS
+          </attrs>
+          <body> Body </body>
+        ...</subr>)
+        <unscannedSubrs>... .List => ListItem(!SId) </unscannedSubrs>
+        // TODO: requires notOverridingIntrinsic(Args)
+  rule  <k>subroutine-agg(Args; E; XS : Body) => . ...</k>
+        <declScanInSubrs> true </declScanInSubrs>
         <extrinsics>... .Map => varNames(Args) |-> subroutine( !SId )</extrinsics>
         (.Bag => <subr>...
           <id> !SId:Int </id>
@@ -207,6 +241,29 @@ module ORO-SEMANTICS-EXTRINSICS
       =>  Rest
           ~> subroutine-returning-agg((D,Args) -> RetType; E; XS : Body)
   rule  <k>subroutine-returning-agg(Args -> RetType; E; XS : Body) => . ...</k>
+        <declScanInSubrs> false </declScanInSubrs>
+        <sourceFile> CurrentUnit </sourceFile>
+        <extrinsics>...
+          .Map => varNames(Args) |-> subroutine( !SId )
+        </extrinsics>
+        <unit>
+          <filepath> CurrentUnit </filepath>
+          <subrs>... .Map => varNames(Args) |-> subroutine( !SId ) </subrs>
+        </unit>
+        (.Bag => <subr>...
+          <id> !SId:Int </id>
+          <attrs>
+            "args" |-> Args
+            "returns" |-> RetType
+            "env" |-> E
+            "extrScope" |-> XS
+          </attrs>
+          <body> Body </body>
+        ...</subr>)
+        <unscannedSubrs>... .List => ListItem(!SId) </unscannedSubrs>
+        // TODO: requires notOverridingIntrinsic(Args)
+  rule  <k>subroutine-returning-agg(Args -> RetType; E; XS : Body) => . ...</k>
+        <declScanInSubrs> true </declScanInSubrs>
         <extrinsics>...
           .Map => varNames(Args) |-> subroutine( !SId )
         </extrinsics>
@@ -223,11 +280,129 @@ module ORO-SEMANTICS-EXTRINSICS
         <unscannedSubrs>... .List => ListItem(!SId) </unscannedSubrs>
         // TODO: requires notOverridingIntrinsic(Args)
   // TODO: "Oro/Core/Subroutine/Import" "from"
+  rule  <k>registerImport(
+          ("Oro/Core/Subroutine/Import" |-> [ Args ])
+          ("from" |-> RelativePath:String )
+        ) =>
+          resolveTypes(Args, subrImportAccumArg)
+          ~> subrImportToExtrinsics( #joinPath( #dirnamePath(CurrentUnit), RelativePath), .Map )
+        ...</k>
+        <sourceFile> CurrentUnit </sourceFile>
+  rule  <k>registerImport(
+          ("Oro/Core/Subroutine/Import" |-> [ Args ])
+          ("returning" |-> RetType)
+          ("from" |-> RelativePath:String )
+        ) =>
+          resolveType(RetType, subrImportReturns)
+          ~> resolveTypes(Args, subrRetImportAccumArg)
+          ~> subrImportToExtrinsics( #joinPath( #dirnamePath(CurrentUnit), RelativePath), .Map )
+        ...</k>
+        <sourceFile> CurrentUnit </sourceFile>
+  rule  <k>registerImport(
+          ("Oro/Core/Subroutine/Import" |-> [ Args ])
+          ("from" |-> yval( |"?"| RelativePath:String ) )
+        ) =>
+          resolveTypes(Args, subrImportAccumArg)
+          ~> subrImportToExtrinsics( #joinPath( #dirnamePath(CurrentUnit), RelativePath), .Map )
+        ...</k>
+        <sourceFile> CurrentUnit </sourceFile>
+  rule  <k>registerImport(
+          ("Oro/Core/Subroutine/Import" |-> [ Args ])
+          ("returning" |-> RetType)
+          ("from" |-> yval( |"?"| RelativePath:String ) )
+        ) =>
+          resolveType(RetType, subrImportReturns)
+          ~> resolveTypes(Args, subrRetImportAccumArg)
+          ~> subrImportToExtrinsics( #joinPath( #dirnamePath(CurrentUnit), RelativePath), .Map )
+        ...</k>
+        <sourceFile> CurrentUnit </sourceFile>
+  rule  subrImportAccumArg
+        ~> varDecl( Name : ArgType )
+        ~> Rest
+        ~> subrImportToExtrinsics( UP, M:Map )
+      =>  Rest
+          ~> subrImportToExtrinsics( UP, M[Name <- ArgType] )
+  rule  subrImportReturns
+        ~> RetType:DataType
+        ~> ArgResolution
+        ~> subrImportToExtrinsics( UnitPath, .Map )
+      =>  ArgResolution
+          ~> subrRetImportToExtrinsics( UnitPath, .Map -> RetType )
+  rule  subrRetImportAccumArg
+        ~> varDecl( Name : ArgType )
+        ~> Rest
+        ~> subrRetImportToExtrinsics( UP, M:Map -> RetType )
+      =>  Rest
+          ~> subrRetImportToExtrinsics( UP, M[Name <- ArgType] -> RetType )
+  rule  <k>I:SubroutineImportDetails => . ...</k>
+        <pendingImports>... .List => ListItem(I) </pendingImports>
+  rule  <k>regextrResolveImports => . ...</k>
+        <pendingImports> .List </pendingImports>
+
+  syntax Bool ::= "loadedUnit" "(" String /* filepath */ ")"    [function]
+  rule  <k>loadedUnit(UnitPath) => true ...</k>
+        <unit>... <filepath>UnitPath</filepath> ...</unit>
+  rule  loadedUnit(_) => false            [owise]
+  rule  <k>regextrResolveImports ...</k>
+        <pendingImports> ListItem(subrImportToExtrinsics(UnitPath, ArgDeclMap)) => .List ...</pendingImports>
+        <unit>...
+          <filepath> UnitPath </filepath>
+          <subrs> UnitExports:Map </subrs>
+        ...</unit>
+        <extrinsics>...
+          .Map => keys(ArgDeclMap) |-> UnitExports[keys(ArgDeclMap)]
+        </extrinsics>
+  syntax K  ::= "prepLoadUnit" "(" String /* sourceFile */ ")"
+  syntax RestoreLoadUnit ::= "restoreLoadUnit" "(" String /* sourceFile */ "," Map /* refs */ "," Map /* globals */ "," Map /* extrinsics */ "," List /* pendingImports */ "," Int /* regextrNewScope */ ")"
+  rule  <k>regextrResolveImports
+          =>  prepLoadUnit(UnitPath)
+              ~> loadUnitFromYaml(
+                #parseInModule(UnitPath, "Sequence", "ORO-SYNTAX"),
+                restoreLoadUnit(LoadingUnit, Refs, Globals, Extrinsics, (ListItem(subrImportToExtrinsics(UnitPath, ArgDeclMap)) OtherImports:List), ExtrScopeID)
+              )
+              ~> regextrResolveImports
+        ...</k>
+        <sourceFile> LoadingUnit </sourceFile>
+        <refs> Refs </refs>
+        <globals> Globals </globals>
+        <extrinsics> Extrinsics </extrinsics>
+        <pendingImports> ListItem(subrImportToExtrinsics(UnitPath, ArgDeclMap)) OtherImports:List </pendingImports>
+        <extrinsicScopes>... regextrNewScope |-> ExtrScopeID ...</extrinsicScopes>
+        requires notBool(loadedUnit(UnitPath))
+  rule  <k>prepLoadUnit(UnitPath) => . ...</k>
+        <sourceFile> _ => UnitPath </sourceFile>
+        (.Bag => <unit>...
+          <filepath> UnitPath </filepath>
+        ...</unit>)
+        <refs> _ => .Map </refs>
+        <globals> _ => .Map </globals>
+        <extrinsics> _ => .Map </extrinsics>
+        <pendingImports> _ => .List </pendingImports>
+        <extrinsicScopes>... (regextrNewScope |-> _) => .Map ...</extrinsicScopes>
+
+  syntax K  ::= "stop" "(" K ")"
+  rule  loadUnitFromYaml(UnitYaml:Sequence, Restore:RestoreLoadUnit )
+          =>  readSourceSeq( UnitYaml )
+              ~> Restore
+  rule  <k>restoreLoadUnit(LoadingUnit, Refs, Globals, Extrinsics, PendingImports, ExtrScopeID) => . ...</k>
+        <sourceFile> _ => LoadingUnit </sourceFile>
+        <refs> _ => Refs </refs>
+        <globals> _ => Globals </globals>
+        <extrinsics> _ => Extrinsics </extrinsics>
+        <pendingImports> _ => PendingImports </pendingImports>
+        <extrinsicScopes>... .Map => regextrNewScope |-> ExtrScopeID </extrinsicScopes>
+        //<refs> Refs => .Map </refs>
+        //<globals> Globals => .Map </globals>
+        //<extrinsics> Extrinsics => .Map </extrinsics>
+        //<pendingImports> PendingImports => .List </pendingImports>
+        //<extrinsicScopes>... (regextrNewScope |-> ExtrScopeID) => .Map ...</extrinsicScopes>
+
   // TODO: "Oro/Core/Macro/Use from"
 
   // Don't know why, but the <k>...</k> notation is required here for the disolve rules
   rule  <k>( "Oro/Core/Subroutine/Define" |-> _ "as" |-> _ ) => . ...</k>
   rule  <k>( "Oro/Core/Subroutine/Define" |-> _ "returning" |-> _ "as" |-> _ ) => . ...</k>
+  rule  <k>( "Oro/Core/Subroutine/Import" |-> _ "from" |-> _ ) => . ...</k>
   rule  <k>( "Oro/Core/Macro/Use from" |-> _ ) => . ...</k>
 
   syntax K  ::= "subrCall" "(" K /* Args:VarDecls */ ";" K /* E:Map */ ";" K /* XSKey:Int */ ";" K /* Body:K */ ";" Map /* Call */ ")"
