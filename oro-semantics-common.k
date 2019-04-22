@@ -43,7 +43,7 @@ module ORO-SEMANTICS-COMMON
   syntax Endianness ::= "little"
                       | "big"
   syntax K  ::= "unpackSourcePath" "(" Scalar ")"
-              | "readSourceSeq" "(" Sequence ")"
+              | "readSourceSeq" "(" Sequence ")"              [function]
               | "yseqToK" "(" Datas ")"                       [macro]
               | "invalidPointer"
 

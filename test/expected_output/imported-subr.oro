@@ -1,0 +1,88 @@
+<T>
+  <k>
+    .
+  </k>
+  <sourceFile>
+    "test/imported-subr.oro"
+  </sourceFile>
+  <refs>
+    .Map
+  </refs>
+  <extrinsics>
+    SetItem ( "fluff" ) |-> subroutine ( 3 )
+  </extrinsics>
+  <extrs>
+    <subr>
+      <id>
+        3
+      </id>
+      <attrs>
+        "args" |-> ( varDecl ( "fluff" : string_type ) , .VarDecls )
+        "env" |-> ( .Map )
+        "extrScope" |-> 2
+      </attrs>
+      <body>
+        yseqToK ( ( yval ( | "?" | "Oro/Core/Flow/Label" ) |-> yval ( | "?" | "nowhere" ) )
+          , .VarDecls )
+      </body>
+    </subr>
+    <unscannedSubrs>
+      .List
+    </unscannedSubrs>
+  </extrs>
+  <pendingImports>
+    .List
+  </pendingImports>
+  <units>
+    <unit>
+      <filepath>
+        "test/subr.oro"
+      </filepath>
+      <subrs>
+        SetItem ( "fluff" ) |-> subroutine ( 3 )
+      </subrs>
+    </unit>
+    <unit>
+      <filepath>
+        "test/imported-subr.oro"
+      </filepath>
+      <subrs>
+        .Map
+      </subrs>
+    </unit>
+  </units>
+  <extrinsicScopes>
+    2 |-> ( SetItem ( "fluff" ) |-> subroutine ( 3 ) )
+  </extrinsicScopes>
+  <scopeBin>
+    3
+  </scopeBin>
+  <startup>
+    false
+  </startup>
+  <declScanInSubrs>
+    false
+  </declScanInSubrs>
+  <context>
+    <labels>
+      .Map
+    </labels>
+    <env>
+      .Map
+    </env>
+  </context>
+  <globals>
+    .Map
+  </globals>
+  <store>
+    .Map
+  </store>
+  <storeBins>
+    1 |-> ( 7 , .VarDecls )
+    2 |-> ( 9 , .VarDecls )
+  </storeBins>
+  <arch>
+    wordSize |-> 64
+    endian |-> little
+  </arch>
+</T>

@@ -30,6 +30,7 @@ module ORO-SEMANTICS-EXTRINSICS
               | "registerFun" "(" Map ")"
               | "nsskeyResolvedInFunArgs"
               | "registerImport" "(" Map ")"
+              | "loadUnitFromYaml" "(" K "," RestoreLoadUnit ")"         [function]
               | "loadMacros" "(" Map ")"
               | SubroutineImportDetails
               | Subroutine
@@ -302,6 +303,65 @@ module ORO-SEMANTICS-EXTRINSICS
         <pendingImports>... .List => ListItem(I) </pendingImports>
   rule  <k>regextrResolveImports => . ...</k>
         <pendingImports> .List </pendingImports>
+
+  syntax Bool ::= "loadedUnit" "(" String /* filepath */ ")"    [function]
+  rule  <k>loadedUnit(UnitPath) => true ...</k>
+        <unit>... <filepath>UnitPath</filepath> ...</unit>
+  rule  loadedUnit(_) => false            [owise]
+  rule  <k>regextrResolveImports ...</k>
+        <pendingImports> ListItem(subrImportToExtrinsics(UnitPath, ArgDeclMap)) => .List ...</pendingImports>
+        <unit>...
+          <filepath> UnitPath </filepath>
+          <subrs> UnitExports:Map </subrs>
+        ...</unit>
+        <extrinsics>...
+          .Map => keys(ArgDeclMap) |-> UnitExports[keys(ArgDeclMap)]
+        </extrinsics>
+  syntax K  ::= "prepLoadUnit" "(" String /* sourceFile */ ")"
+  syntax RestoreLoadUnit ::= "restoreLoadUnit" "(" String /* sourceFile */ "," Map /* refs */ "," Map /* globals */ "," Map /* extrinsics */ "," List /* pendingImports */ "," Int /* regextrNewScope */ ")"
+  rule  <k>regextrResolveImports
+          =>  prepLoadUnit(UnitPath)
+              ~> loadUnitFromYaml(
+                #parseInModule(UnitPath, "Sequence", "ORO-SYNTAX"),
+                restoreLoadUnit(LoadingUnit, Refs, Globals, Extrinsics, (ListItem(subrImportToExtrinsics(UnitPath, ArgDeclMap)) OtherImports:List), ExtrScopeID)
+              )
+              ~> regextrResolveImports
+        ...</k>
+        <sourceFile> LoadingUnit </sourceFile>
+        <refs> Refs </refs>
+        <globals> Globals </globals>
+        <extrinsics> Extrinsics </extrinsics>
+        <pendingImports> ListItem(subrImportToExtrinsics(UnitPath, ArgDeclMap)) OtherImports:List </pendingImports>
+        <extrinsicScopes>... regextrNewScope |-> ExtrScopeID ...</extrinsicScopes>
+        requires notBool(loadedUnit(UnitPath))
+  rule  <k>prepLoadUnit(UnitPath) => . ...</k>
+        <sourceFile> _ => UnitPath </sourceFile>
+        (.Bag => <unit>...
+          <filepath> UnitPath </filepath>
+        ...</unit>)
+        <refs> _ => .Map </refs>
+        <globals> _ => .Map </globals>
+        <extrinsics> _ => .Map </extrinsics>
+        <pendingImports> _ => .List </pendingImports>
+        <extrinsicScopes>... (regextrNewScope |-> _) => .Map ...</extrinsicScopes>
+
+  syntax K  ::= "stop" "(" K ")"
+  rule  loadUnitFromYaml(UnitYaml:Sequence, Restore:RestoreLoadUnit )
+          =>  readSourceSeq( UnitYaml )
+              ~> Restore
+  rule  <k>restoreLoadUnit(LoadingUnit, Refs, Globals, Extrinsics, PendingImports, ExtrScopeID) => . ...</k>
+        <sourceFile> _ => LoadingUnit </sourceFile>
+        <refs> _ => Refs </refs>
+        <globals> _ => Globals </globals>
+        <extrinsics> _ => Extrinsics </extrinsics>
+        <pendingImports> _ => PendingImports </pendingImports>
+        <extrinsicScopes>... .Map => regextrNewScope |-> ExtrScopeID </extrinsicScopes>
+        //<refs> Refs => .Map </refs>
+        //<globals> Globals => .Map </globals>
+        //<extrinsics> Extrinsics => .Map </extrinsics>
+        //<pendingImports> PendingImports => .List </pendingImports>
+        //<extrinsicScopes>... (regextrNewScope |-> ExtrScopeID) => .Map ...</extrinsicScopes>
+
   // TODO: "Oro/Core/Macro/Use from"
 
   // Don't know why, but the <k>...</k> notation is required here for the disolve rules
