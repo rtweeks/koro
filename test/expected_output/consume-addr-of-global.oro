@@ -3,7 +3,7 @@
     ( [ "Oro/CoreLib/Set" , ( ( "base type" |-> "string" ) , ( "empty at" , .VarDecls ) ) ]
       |-> yval ( | "?" | "consume address from variable" ) ) ~> yseqToK ( .VarDecls ) ~> exitScope
     ( 2 , "consume address" |-> var
-      ( memaddr_type , opaque ( 17 ) )
+      ( memaddr_type , opaque ( 16 ) )
       ,
       false ) ~> exitSubroutine ( SetItem ( "consume address" ) |-> subroutine ( 3 )
       SetItem
@@ -67,8 +67,14 @@
   <pendingImports>
     .List
   </pendingImports>
+  <currentRuntime>
+    1
+  </currentRuntime>
   <units>
     <unit>
+      <runtime>
+        1
+      </runtime>
       <filepath>
         "test/consume-addr-of-global.oro"
       </filepath>
@@ -99,7 +105,7 @@
     </labels>
     <env>
       "consume address from variable" |-> var
-      ( memaddr_type , opaque ( 19 ) )
+      ( memaddr_type , opaque ( 18 ) )
     </env>
   </context>
   <globals>
@@ -107,15 +113,15 @@
     ( string_type , opaque ( 6 ) )
   </globals>
   <store>
-    17 |-> opaque_ptr
+    16 |-> opaque_ptr
+    ( string_type , 6 )
+    18 |-> opaque_ptr
     ( string_type , 6 )
     6 |-> ""
-    19 |-> opaque_ptr
-    ( string_type , 6 )
   </store>
   <storeBins>
-    1 |-> ( 17 , .VarDecls )
-    2 |-> ( 19 , .VarDecls )
+    1 |-> ( 16 , .VarDecls )
+    2 |-> ( 18 , .VarDecls )
   </storeBins>
   <arch>
     wordSize |-> 64

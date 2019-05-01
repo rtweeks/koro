@@ -24,8 +24,14 @@
   <pendingImports>
     .List
   </pendingImports>
+  <currentRuntime>
+    1
+  </currentRuntime>
   <units>
     <unit>
+      <runtime>
+        1
+      </runtime>
       <filepath>
         "test/hello3.oro"
       </filepath>

@@ -188,7 +188,9 @@ module ORO-SEMANTICS-EXTRINSICS
         <declScanInSubrs> false </declScanInSubrs>
         <sourceFile> CurrentUnit </sourceFile>
         <extrinsics>... .Map => varNames(Args) |-> subroutine( !SId )</extrinsics>
+        <currentRuntime> Runtime </currentRuntime>
         <unit>
+          <runtime> Runtime </runtime>
           <filepath> CurrentUnit </filepath>
           <subrs>... .Map => varNames(Args) |-> subroutine( !SId ) </subrs>
         </unit>
@@ -246,7 +248,9 @@ module ORO-SEMANTICS-EXTRINSICS
         <extrinsics>...
           .Map => varNames(Args) |-> subroutine( !SId )
         </extrinsics>
+        <currentRuntime> Runtime </currentRuntime>
         <unit>
+          <runtime> Runtime </runtime>
           <filepath> CurrentUnit </filepath>
           <subrs>... .Map => varNames(Args) |-> subroutine( !SId ) </subrs>
         </unit>
@@ -341,11 +345,14 @@ module ORO-SEMANTICS-EXTRINSICS
 
   syntax Bool ::= "loadedUnit" "(" String /* filepath */ ")"    [function]
   rule  <k>loadedUnit(UnitPath) => true ...</k>
-        <unit>... <filepath>UnitPath</filepath> ...</unit>
+        <currentRuntime> Runtime </currentRuntime>
+        <unit>... <runtime>Runtime</runtime> <filepath>UnitPath</filepath> ...</unit>
   rule  loadedUnit(_) => false            [owise]
   rule  <k>regextrResolveImports ...</k>
         <pendingImports> ListItem(subrImportToExtrinsics(UnitPath, ArgDeclMap)) => .List ...</pendingImports>
+        <currentRuntime> Runtime </currentRuntime>
         <unit>...
+          <runtime> Runtime </runtime>
           <filepath> UnitPath </filepath>
           <subrs> UnitExports:Map </subrs>
         ...</unit>
@@ -370,8 +377,10 @@ module ORO-SEMANTICS-EXTRINSICS
         <extrinsicScopes>... regextrNewScope |-> ExtrScopeID ...</extrinsicScopes>
         requires notBool(loadedUnit(UnitPath))
   rule  <k>prepLoadUnit(UnitPath) => . ...</k>
+        <currentRuntime> Runtime </currentRuntime>
         <sourceFile> _ => UnitPath </sourceFile>
         (.Bag => <unit>...
+          <runtime> Runtime </runtime>
           <filepath> UnitPath </filepath>
         ...</unit>)
         <refs> _ => .Map </refs>

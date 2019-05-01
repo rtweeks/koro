@@ -33,8 +33,14 @@
   <pendingImports>
     .List
   </pendingImports>
+  <currentRuntime>
+    1
+  </currentRuntime>
   <units>
     <unit>
+      <runtime>
+        1
+      </runtime>
       <filepath>
         "test/subr.oro"
       </filepath>
@@ -70,7 +76,7 @@
     .Map
   </store>
   <storeBins>
-    1 |-> ( 6 , .VarDecls )
+    1 |-> ( 5 , .VarDecls )
   </storeBins>
   <arch>
     wordSize |-> 64

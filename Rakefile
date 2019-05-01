@@ -43,12 +43,47 @@ desc "Build the Oro executable semantic interpreter"
 task :build => [KORO_TIMESTAMP, 'build:parser']
 
 namespace :test do
+  def test_inputs
+    FileList['test/**/*.oro'].exclude('test/expected_output/**/*').to_a
+  end
+
+  def expected_output_path_of test_file
+    Pathname(__FILE__).dirname + "test" + "expected_output" + (
+      Pathname(test_file).relative_path_from Pathname("test")
+    )
+  end
+
+  def run_test(test_file, quiet: false)
+    expected_outpath = expected_output_path_of test_file
+    Dir.mktmpdir do |dir|
+      dir = Pathname(dir)
+      actual_outpath = dir + 'actual.txt'
+      sh './koro-run', '--output-file', actual_outpath.to_s, test_file
+      actual_output = ConfigStyler.style(actual_outpath.read)
+      actual_outpath.write actual_output
+      unless quiet
+        puts
+        puts actual_output
+        puts
+      end
+      if expected_outpath.exist?
+        expected_output = expected_outpath.read
+        if actual_output == expected_output
+          yield :match, nil, nil
+        else
+          yield :mismatch, expected_outpath, actual_outpath
+        end
+      else
+        yield :no_expectation, expected_outpath, actual_output
+      end
+    end
+  end
+
   desc "Test one case"
   task :one => [:build] do
     require 'highline'  # <- highline gem
     last_pick = Pathname(__FILE__).dirname + ".last_one_test"
     cli = HighLine.new
-    test_inputs = FileList['test/**/*.oro'].exclude('test/expected_output/**/*').to_a
     begin
       test_file = cli.choose(*test_inputs) do |menu|
         menu.header = "\nAvailable Tests"
@@ -68,37 +103,59 @@ namespace :test do
     end
     last_pick.write test_file
 
-    expected_outpath = Pathname(__FILE__).dirname + "test" + "expected_output" + (
-      Pathname(test_file).relative_path_from Pathname("test")
-    )
-    Dir.mktmpdir do |dir|
-      dir = Pathname(dir)
-      actual_outpath = dir + 'actual.txt'
-      sh './koro-run', '--output-file', actual_outpath.to_s, test_file
-      actual_output = ConfigStyler.style(actual_outpath.read)
-      actual_outpath.write actual_output
-      puts
-      puts actual_output
-      puts
-      if expected_outpath.exist?
-        expected_output = expected_outpath.read
-        if actual_output == expected_output
-          cli.say cli.color("*** Output matched expected ***", :bright_green)
+    expected_outpath = expected_output_path_of test_file
+    run_test(test_file) do |outcome, *args|
+      case outcome
+      when :match
+        cli.say cli.color("*** Output matched expected ***", :bright_green)
+
+      when :mismatch
+        tool = DiffTool.load_from(Pathname(__FILE__).dirname)
+        if cli.agree(cli.color("Output does not match expected; #{tool.verb} #{tool.name}? ", :red), true)
+          tool.run(*args)
         else
-          # TODO: Look up configured diff
-          tool = DiffTool.load_from(Pathname(__FILE__).dirname)
-          if cli.agree(cli.color("Output does not match expected; #{tool.verb} #{tool.name}? ", :red), true)
-            tool.run(expected_outpath, actual_outpath)
-          else
-            exit 1
-          end
+          exit 1
         end
-      else
+
+      when :no_expectation
+        expected_outpath, actual_output = args
         if cli.agree(cli.color("No expected output provided; save this as expected? ", :yellow), true)
           expected_outpath.dirname.mkpath
           expected_outpath.write actual_output
         end
       end
+    end
+  end
+
+  desc "Test all cases with expected output"
+  task :all => [:build] do
+    begin
+      require 'highline'
+      cli = HighLine.new
+      output_result = ->(desc, color) {cli.say cli.color(desc, color)}
+    rescue
+      output_result = ->(desc, color) {puts desc}
+    end
+
+    this_dir = Pathname(__FILE__).dirname
+    expected_output_files = Set.new FileList["test/expected_output/**/*.oro"]
+    all_passed = true
+    test_inputs.each do |test_file|
+      expected_outpath = expected_output_path_of test_file
+      next unless expected_output_files.find {|ofp| expected_outpath.to_s.end_with? ofp}
+      run_test(test_file, quiet: true) do |outcome, *args|
+        all_passed = false unless outcome == :match
+        result_desc, color = {
+          match: ["ok", :bright_green],
+          mismatch: ["failed", :red],
+        }[outcome] || ["unknown result: #{outcome}", :red]
+        output_result["    ^^^ #{result_desc} ^^^", color]
+      end
+    end
+
+    unless all_passed
+      output_result[%Q{\nSome tests failed.  Run "rake test:one" for more details on specific failure.\n}, :red]
+      exit 1
     end
   end
 

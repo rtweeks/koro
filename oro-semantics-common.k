@@ -17,8 +17,10 @@ module ORO-SEMANTICS-COMMON
       <unscannedSubrs> .List </unscannedSubrs>
     </extrs>
     <pendingImports> .List </pendingImports>
+    <currentRuntime> 1 </currentRuntime>
     <units>
       <unit multiplicity="*">
+        <runtime> -1 </runtime>
         <filepath> "" </filepath>
         <subrs> .Map </subrs>
       </unit>
@@ -64,8 +66,10 @@ module ORO-SEMANTICS-COMMON
   syntax Ints ::= List{Int, ","}
 
   rule  <k>unpackSourcePath( . _ Val ) => . ...</k>
+        <currentRuntime> Runtime </currentRuntime>
         <sourceFile> _ => Val </sourceFile>
         (.Bag => <unit>...
+          <runtime> Runtime </runtime>
           <filepath>Val</filepath>
         ...</unit>)
 
