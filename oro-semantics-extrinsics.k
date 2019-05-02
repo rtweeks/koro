@@ -87,6 +87,20 @@ module ORO-SEMANTICS-EXTRINSICS
         <extrinsicScopes>... XSKey |-> XS' ...</extrinsicScopes>
         <extrinsics> XS => XS' </extrinsics>
         <declScanInSubrs> _ => true </declScanInSubrs>
+  rule  <k>regextrScanBodies( ListItem(MacId:Int) Rest:List )
+          =>  registerExtrinsics( Body )
+              ~> regextrUpdateMacro( MacId )
+              ~> regextrRestoreOuter( XS )
+              ~> regextrScanBodies( Rest )
+        ...</k>
+        <macro>...
+          <mid> MacId </mid>
+          <mextrScope> XSKey </mextrScope>
+          <mbody> Body </mbody>
+        ...</macro>
+        <extrinsicScopes>... XSKey |-> XS' ...</extrinsicScopes>
+        <extrinsics> XS => XS' </extrinsics>
+        <declScanInSubrs> _ => true </declScanInSubrs>
   rule  <k>regextrUpdateSubr( SubrId ) => . ...</k>
         <subr>...
           <id> SubrId </id>
@@ -100,6 +114,21 @@ module ORO-SEMANTICS-EXTRINSICS
           <id> SubrId </id>
           <attrs>... "extrScope" |-> XSKey:Int ...</attrs>
         ...</subr>
+        <extrinsics> XS </extrinsics>
+        <extrinsicScopes>... XSKey |-> XS ...</extrinsicScopes>
+  rule  <k>regextrUpdateMacro( MacId ) => . ...</k>
+        <macro>...
+          <mid> MacId </mid>
+          <mextrScope> OuterXSKey => !XSKey:Int </mextrScope>
+        ...</macro>
+        <extrinsics> XS </extrinsics>
+        <extrinsicScopes> XSS => XSS[!XSKey <- XS] </extrinsicScopes>
+        requires XSS[OuterXSKey] =/=K XS
+  rule  <k>regextrUpdateMacro( MacId ) => . ...</k>
+        <macro>...
+          <mid> MacId </mid>
+          <mextrScope> XSKey:Int </mextrScope>
+        ...</macro>
         <extrinsics> XS </extrinsics>
         <extrinsicScopes>... XSKey |-> XS ...</extrinsicScopes>
   rule  <k>regextrRestoreOuter( XS ) => . ...</k>
@@ -125,6 +154,8 @@ module ORO-SEMANTICS-EXTRINSICS
         requires  keys(M) in SetItem(skeysDefineSubr)
   rule  registerResolvedExtrinsic( M ) => registerFun( M )
         requires  keys(M) in SetItem(skeysDefineFun)
+  rule  registerResolvedExtrinsic( M ) => registerMacro( M )
+        requires  keys(M) ==K skeysDefineMacro
   rule  registerResolvedExtrinsic( M ) => registerImport( M )
         requires  keys(M) in SetItem(skeysImportFrom)
         orBool    keys(M) in SetItem(skeysImportReturningFrom)
@@ -163,6 +194,8 @@ module ORO-SEMANTICS-EXTRINSICS
           (keys(M) in SetItem(skeysDefineSubr))
           orBool
           (keys(M) in SetItem(skeysDefineFun))
+          orBool
+          (keys(M) in SetItem(skeysDefineMacro))
           orBool
           (keys(M) in SetItem(skeysImportFrom))
           orBool
@@ -286,6 +319,30 @@ module ORO-SEMANTICS-EXTRINSICS
         ...</subr>)
         <unscannedSubrs>... .List => ListItem(!SId) </unscannedSubrs>
         // TODO: requires notOverridingIntrinsic(Args)
+
+  rule  <k>registerMacro(
+          ("Oro/Core/Macro/Define" |-> [ Keys ])
+          ("as" |-> [ Body ])
+        ) => .
+        ...</k>
+        <declScanInSubrs> false </declScanInSubrs>
+        <sourceFile> CurrentUnit </sourceFile>
+        <currentRuntime> Runtime </currentRuntime>
+        <unit>...
+          <runtime> Runtime </runtime>
+          <filepath> CurrentUnit </filepath>
+          <macros>... .Map => keySequence2Set(Keys) |-> macro( !MId:Int ) </macros>
+        ...</unit>
+        (.Bag => <macro>...
+          <mid> !MId </mid>
+          <mkeys> keySequence2Set(Keys) </mkeys>
+          <mextrScope> XSKey </mextrScope>
+          <mbody> yseqToK(Body) </mbody>
+        ...</macro>)
+        <unscannedSubrs>... .List => ListItem(!MId) </unscannedSubrs>
+        <extrinsicScopes>... regextrNewScope |-> XSKey ...</extrinsicScopes>
+        // TODO: requires notOverridingIntrinsic(keySequence2Set(Keys))
+
   // TODO: "Oro/Core/Subroutine/Import" "from"
   rule  <k>registerImport(
           ("Oro/Core/Subroutine/Import" |-> [ Args ])
@@ -414,6 +471,7 @@ module ORO-SEMANTICS-EXTRINSICS
   // Don't know why, but the <k>...</k> notation is required here for the disolve rules
   rule  <k>( "Oro/Core/Subroutine/Define" |-> _ "as" |-> _ ) => . ...</k>
   rule  <k>( "Oro/Core/Subroutine/Define" |-> _ "returning" |-> _ "as" |-> _ ) => . ...</k>
+  rule  <k>( "Oro/Core/Macro/Define" |-> _ "as" |-> _) => . ...</k>
   rule  <k>( "Oro/Core/Subroutine/Import" |-> _ "from" |-> _ ) => . ...</k>
   rule  <k>( "Oro/Core/Macro/Use from" |-> _ ) => . ...</k>
 

@@ -76,8 +76,6 @@ module ORO-SEMANTICS-COMMON
                       | "datasOfYseq" "(" YamlSeq ")"         [function]
   syntax Ints ::= List{Int, ","}
 
-  syntax Set  ::= "keySequence2Set" "(" BSeq ")"              [function]
-
   rule  <k>unpackSourcePath( . _ Val ) => . ...</k>
         <currentRuntime> Runtime </currentRuntime>
         <sourceFile> _ => Val </sourceFile>
@@ -112,4 +110,11 @@ module ORO-SEMANTICS-COMMON
   rule  isGenericSequence(yseq(|"!"| _)) => true
   rule  isGenericSequence(yseq(|"tag:yaml.org,2002:seq"| _)) => true
   rule  isGenericSequence(_) => false     [owise]
+
+  syntax Set  ::= "keySequence2Set" "(" Datas ")"              [function]
+  rule  keySequence2Set(  .Datas  ) => .Set
+  rule  keySequence2Set(  yval(|"?"| V), Rest:Datas ) => SetItem(V) keySequence2Set(  Rest  )
+  rule  keySequence2Set(  yval(|T| V), Rest:Datas ) => SetItem(yval(|T| V)) keySequence2Set(  Rest  )
+        requires T =/=String "?"
+  rule  keySequence2Set(  V:FixedTypeData, Rest:Datas ) => SetItem(V) keySequence2Set(  Rest  )
 endmodule

@@ -1,0 +1,10 @@
+# This macro is useful to create a "bag of nodes" within the YAML file.
+# It return nothing.
+
+- Oro/Core/Subroutine/Define:
+  - {argument: fluff, as: string}
+  as:
+  - Oro/Core/Flow/Label: nowhere
+
+- Oro/Core/Macro/Define: [node bag]
+  as: []
