@@ -37,6 +37,7 @@ module ORO-SEMANTICS-EXTRINSICS
               | "loadUnitFromYaml" "(" K "," RestoreLoadUnit ")"         [function]
               | "loadMacros" "(" Map ")"
               | "macrosLoadToExtrinsics" "(" String ")"
+              | "useMacrosFromYaml" "(" K "," RestoreLoadMacros ")"       [function]
               | SubroutineImportDetails
               | Subroutine
               | StatementCallableAgg
@@ -408,6 +409,14 @@ module ORO-SEMANTICS-EXTRINSICS
         <currentRuntime> Runtime </currentRuntime>
         <unit>... <runtime>Runtime</runtime> <filepath>UnitPath</filepath> ...</unit>
   rule  loadedUnit(_) => false            [owise]
+  syntax Bool ::= "macrosLoaded" "(" String /* filepath */ ")"    [function]
+  rule  <k>macrosLoaded(UnitPath) => true ...</k>
+        <currentRuntime> Runtime </currentRuntime>
+        <unit>...
+          <loadedByRuntime> Runtime </loadedByRuntime>
+          <filepath> UnitPath </filepath>
+        ...</unit>
+  rule  macrosLoaded(_) => false
   rule  <k>regextrResolveImports ...</k>
         <pendingImports> ListItem(subrImportToExtrinsics(UnitPath, ArgDeclMap)) => .List ...</pendingImports>
         <currentRuntime> Runtime </currentRuntime>
@@ -419,6 +428,15 @@ module ORO-SEMANTICS-EXTRINSICS
         <extrinsics>...
           .Map => keys(ArgDeclMap) |-> UnitExports[keys(ArgDeclMap)]
         </extrinsics>
+  rule  <k>regextrResolveImports ...</k>
+        <pendingImports> ListItem(macrosLoadToExtrinsics(UnitPath)) => .List ...</pendingImports>
+        <currentRuntime> Runtime </currentRuntime>
+        <unit>...
+          <loadedByRuntime> Runtime:Int </loadedByRuntime>
+          <filepath> UnitPath </filepath>
+          <macros> ProvidedMacros:Map </macros>
+        ...</unit>
+        <extrinsics>... .Map => ProvidedMacros </extrinsics>
   syntax K  ::= "prepLoadUnit" "(" String /* sourceFile */ ")"
   syntax RestoreLoadUnit ::= "restoreLoadUnit" "(" String /* sourceFile */ "," Map /* refs */ "," Map /* globals */ "," Map /* extrinsics */ "," List /* pendingImports */ "," Int /* regextrNewScope */ ")"
   rule  <k>regextrResolveImports
@@ -448,6 +466,25 @@ module ORO-SEMANTICS-EXTRINSICS
         <extrinsics> _ => .Map </extrinsics>
         <pendingImports> _ => .List </pendingImports>
         <extrinsicScopes>... (regextrNewScope |-> _) => .Map ...</extrinsicScopes>
+  syntax K  ::= "prepLoadMacros" "(" Int /* new runtime */ "," String /* sourceFile */ ")"
+  syntax RestoreLoadMacros  ::= "restoreLoadMacros" "(" String /* sourceFile */ "," Map /* refs */ "," Map /* globals */ "," Map /* extrinsics */ "," List /* pendingImports */ "," Int /* regextrNewScope */ "," Int /* currentRuntime */ ")"
+  rule  <k>regextrResolveImports
+          =>  prepLoadMacros(NewRuntime, UnitPath)
+              ~> useMacrosFromYaml(
+                #parseInModule(UnitPath, "Sequence", "ORO-SYNTAX"),
+                restoreLoadMacros(LoadingUnit, Refs, Globals, Extrinsics, (ListItem(macrosLoadToExtrinsics(UnitPath)) OtherImports:List), ExtrScopeID, Runtime)
+              )
+              ~> regextrResolveImports
+        ...</k>
+        <currentRuntime> Runtime </currentRuntime>
+        <nextRuntime> NewRuntime:Int => NewRuntime +Int 1 </nextRuntime>
+        <sourceFile> LoadingUnit </sourceFile>
+        <refs> Refs </refs>
+        <globals> Globals </globals>
+        <extrinsics> Extrinsics </extrinsics>
+        <pendingImports> ListItem(macrosLoadToExtrinsics(UnitPath)) OtherImports:List </pendingImports>
+        <extrinsicScopes>... regextrNewScope |-> ExtrScopeID ...</extrinsicScopes>
+        requires notBool(macrosLoaded(UnitPath))
 
   rule  loadUnitFromYaml(UnitYaml:Sequence, Restore:RestoreLoadUnit )
           =>  readSourceSeq( UnitYaml )
