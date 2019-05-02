@@ -14,6 +14,7 @@ module ORO-SEMANTICS-INTRINSICS
                 | "skeysDo"                       [function]
                 | "skeysDefineVar"                [function]
                 | "skeysDefineVarRet"             [function]
+                | "skeysDefineMacro"              [function]
   syntax Bool ::= "oroIsIntrinsic" "(" Map ")"    [function]
 
   rule setFromList( .List ) => .Set
@@ -42,6 +43,10 @@ module ORO-SEMANTICS-INTRINSICS
   )
 
   rule skeysUseMacros => SetItem("Oro/Core/Macro/Use from")
+  rule skeysDefineMacro => (
+    SetItem("Oro/Core/Macro/Define")
+    SetItem("as")
+  )
 
   rule skeysLabel => SetItem("Oro/Core/Flow/Label")
 
@@ -78,7 +83,7 @@ module ORO-SEMANTICS-INTRINSICS
     SetItem( SetItem("Oro/Core/Subroutine/Indirectly invoke") SetItem("with") )
 
     // Macros
-    SetItem( SetItem("Oro/Core/Macro/Define") SetItem("as") )
+    SetItem( skeysDefineMacro )
     SetItem( SetItem("Oro/Core/Macro/Expand") SetItem("with substitutions") )
     SetItem( SetItem("Oro/Core/Define expression handler") )
     SetItem( skeysUseMacros )

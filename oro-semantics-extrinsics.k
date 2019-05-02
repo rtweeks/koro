@@ -20,6 +20,7 @@ module ORO-SEMANTICS-EXTRINSICS
               | "regextrCaptureScope"
               | "regextrScanBodies" "(" List ")"
               | "regextrUpdateSubr" "(" Int ")"
+              | "regextrUpdateMacro" "(" Int ")"
               | "regextrRestoreOuter" "(" Map ")"
               | "registerResolvedExtrinsic" "(" Map ")"
               | "nsskeyResolvedInExtrinsicScan"
@@ -31,12 +32,14 @@ module ORO-SEMANTICS-EXTRINSICS
               | "subrRetImportAccumArg"
               | "registerFun" "(" Map ")"
               | "nsskeyResolvedInFunArgs"
+              | "registerMacro" "(" Map ")"
               | "registerImport" "(" Map ")"
               | "loadUnitFromYaml" "(" K "," RestoreLoadUnit ")"         [function]
               | "loadMacros" "(" Map ")"
               | SubroutineImportDetails
               | Subroutine
               | StatementCallableAgg
+              | "macro" "(" Int ")"
 
   /*
     subroutine and function capture <env/> after the first semicolon,
