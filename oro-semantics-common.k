@@ -28,9 +28,11 @@ module ORO-SEMANTICS-COMMON
     </extrs>
     <pendingImports> .List </pendingImports>
     <currentRuntime> 1 </currentRuntime>
+    <nextRuntime> 2 </nextRuntime>
     <units>
       <unit multiplicity="*">
         <runtime> -1 </runtime>
+        <loadedByRuntime> . </loadedByRuntime>
         <filepath> "" </filepath>
         <subrs> .Map </subrs>
         <macros> .Map </macros>
