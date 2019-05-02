@@ -36,6 +36,7 @@ module ORO-SEMANTICS-EXTRINSICS
               | "registerImport" "(" Map ")"
               | "loadUnitFromYaml" "(" K "," RestoreLoadUnit ")"         [function]
               | "loadMacros" "(" Map ")"
+              | "macrosLoadToExtrinsics" "(" String ")"
               | SubroutineImportDetails
               | Subroutine
               | StatementCallableAgg
@@ -343,7 +344,6 @@ module ORO-SEMANTICS-EXTRINSICS
         <extrinsicScopes>... regextrNewScope |-> XSKey ...</extrinsicScopes>
         // TODO: requires notOverridingIntrinsic(keySequence2Set(Keys))
 
-  // TODO: "Oro/Core/Subroutine/Import" "from"
   rule  <k>registerImport(
           ("Oro/Core/Subroutine/Import" |-> [ Args ])
           ("from" |-> RelativePath:String )
@@ -449,7 +449,6 @@ module ORO-SEMANTICS-EXTRINSICS
         <pendingImports> _ => .List </pendingImports>
         <extrinsicScopes>... (regextrNewScope |-> _) => .Map ...</extrinsicScopes>
 
-  syntax K  ::= "stop" "(" K ")"
   rule  loadUnitFromYaml(UnitYaml:Sequence, Restore:RestoreLoadUnit )
           =>  readSourceSeq( UnitYaml )
               ~> Restore
@@ -467,6 +466,18 @@ module ORO-SEMANTICS-EXTRINSICS
         //<extrinsicScopes>... (regextrNewScope |-> ExtrScopeID) => .Map ...</extrinsicScopes>
 
   // TODO: "Oro/Core/Macro/Use from"
+  rule  <k>loadMacros(
+          "Oro/Core/Macro/Use from" |-> RelativePath:String
+        ) => .
+        ...</k>
+        <sourceFile> CurrentUnit </sourceFile>
+        <pendingImports>... .List => ListItem(macrosLoadToExtrinsics( #joinPath( #dirnamePath(CurrentUnit), RelativePath ) ))</pendingImports>
+  rule  <k>loadMacros(
+          "Oro/Core/Macro/Use from" |-> yval( |"?"| RelativePath:String )
+        ) => .
+        ...</k>
+        <sourceFile> CurrentUnit </sourceFile>
+        <pendingImports>... .List => ListItem(macrosLoadToExtrinsics( #joinPath( #dirnamePath(CurrentUnit), RelativePath ) ))</pendingImports>
 
   // Don't know why, but the <k>...</k> notation is required here for the disolve rules
   rule  <k>( "Oro/Core/Subroutine/Define" |-> _ "as" |-> _ ) => . ...</k>
@@ -485,7 +496,6 @@ module ORO-SEMANTICS-EXTRINSICS
   syntax ReturningSubrCall  ::= "subrCall" "(" K /* Args:VarDecls */ "->" K /* RetType:DataType */ ";" K /* E:Map */ ";" K /* XSKey:Int */ ";" K /* Body:K */ ";" Map /* Call */ ")"
   syntax ArgEval  ::= "evalArg" "(" Data ":" DataType "<-" K ")"
   syntax ArgEvals ::= List{ArgEval, ","}
-  syntax K  ::= "stop" "(" K ")"
   rule  <k> Call:Map => subrCall(
           Subr["args"];
           Subr["env"];
