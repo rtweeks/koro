@@ -19,6 +19,7 @@ module ORO-SEMANTICS-COMMON
       <definedMacros>
         <macro multiplicity="*">
           <mid> -1 </mid>
+          <mruntime> -3 </mruntime>
           <mkeys> .Set </mkeys>
           <mextrScope> -1 </mextrScope>
           <mbody> . </mbody>

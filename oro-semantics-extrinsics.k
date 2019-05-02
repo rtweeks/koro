@@ -337,6 +337,7 @@ module ORO-SEMANTICS-EXTRINSICS
         ...</unit>
         (.Bag => <macro>...
           <mid> !MId </mid>
+          <mruntime> Runtime </mruntime>
           <mkeys> keySequence2Set(Keys) </mkeys>
           <mextrScope> XSKey </mextrScope>
           <mbody> yseqToK(Body) </mbody>
