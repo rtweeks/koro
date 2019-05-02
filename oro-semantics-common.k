@@ -9,11 +9,21 @@ module ORO-SEMANTICS-COMMON
     <refs> .Map </refs>
     <extrinsics> .Map </extrinsics>
     <extrs>
-      <subr multiplicity="*">
-        <id> -1 </id>
-        <attrs> .Map </attrs> /* "args", "returns"?, "env", "extrScope"  */
-        <body> . </body>
-      </subr>
+      <definedSubrs>
+        <subr multiplicity="*">
+          <id> -1 </id>
+          <attrs> .Map </attrs> /* "args", "returns"?, "env", "extrScope"  */
+          <body> . </body>
+        </subr>
+      </definedSubrs>
+      <definedMacros>
+        <macro multiplicity="*">
+          <mid> -1 </mid>
+          <mkeys> .Set </mkeys>
+          <mextrScope> -1 </mextrScope>
+          <mbody> . </mbody>
+        </macro>
+      </definedMacros>
       <unscannedSubrs> .List </unscannedSubrs>
     </extrs>
     <pendingImports> .List </pendingImports>
@@ -23,6 +33,7 @@ module ORO-SEMANTICS-COMMON
         <runtime> -1 </runtime>
         <filepath> "" </filepath>
         <subrs> .Map </subrs>
+        <macros> .Map </macros>
       </unit>
     </units>
     <extrinsicScopes> .Map </extrinsicScopes>
@@ -64,6 +75,8 @@ module ORO-SEMANTICS-COMMON
   syntax Datas      ::= List{Data, ","}
                       | "datasOfYseq" "(" YamlSeq ")"         [function]
   syntax Ints ::= List{Int, ","}
+
+  syntax Set  ::= "keySequence2Set" "(" BSeq ")"              [function]
 
   rule  <k>unpackSourcePath( . _ Val ) => . ...</k>
         <currentRuntime> Runtime </currentRuntime>

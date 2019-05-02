@@ -192,11 +192,11 @@ module ORO-SEMANTICS-EXTRINSICS
         <sourceFile> CurrentUnit </sourceFile>
         <extrinsics>... .Map => varNames(Args) |-> subroutine( !SId )</extrinsics>
         <currentRuntime> Runtime </currentRuntime>
-        <unit>
+        <unit>...
           <runtime> Runtime </runtime>
           <filepath> CurrentUnit </filepath>
           <subrs>... .Map => varNames(Args) |-> subroutine( !SId ) </subrs>
-        </unit>
+        ...</unit>
         (.Bag => <subr>...
           <id> !SId:Int </id>
           <attrs>
@@ -252,11 +252,11 @@ module ORO-SEMANTICS-EXTRINSICS
           .Map => varNames(Args) |-> subroutine( !SId )
         </extrinsics>
         <currentRuntime> Runtime </currentRuntime>
-        <unit>
+        <unit>...
           <runtime> Runtime </runtime>
           <filepath> CurrentUnit </filepath>
           <subrs>... .Map => varNames(Args) |-> subroutine( !SId ) </subrs>
-        </unit>
+        ...</unit>
         (.Bag => <subr>...
           <id> !SId:Int </id>
           <attrs>
