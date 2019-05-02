@@ -485,6 +485,19 @@ module ORO-SEMANTICS-EXTRINSICS
         <pendingImports> ListItem(macrosLoadToExtrinsics(UnitPath)) OtherImports:List </pendingImports>
         <extrinsicScopes>... regextrNewScope |-> ExtrScopeID ...</extrinsicScopes>
         requires notBool(macrosLoaded(UnitPath))
+  rule  <k>prepLoadMacros(NewRuntime, UnitPath) => . ...</k>
+        <currentRuntime> Runtime => NewRuntime </currentRuntime>
+        <sourceFile> _ => UnitPath </sourceFile>
+        (.Bag => <unit>...
+          <runtime> NewRuntime </runtime>
+          <loadedByRuntime> Runtime </loadedByRuntime>
+          <filepath> UnitPath </filepath>
+        ...</unit>)
+        <refs> _ => .Map </refs>
+        <globals> _ => .Map </globals>
+        <extrinsics> _ => .Map </extrinsics>
+        <pendingImports> _ => .List </pendingImports>
+        <extrinsicScopes>... (regextrNewScope |-> _) => .Map ...</extrinsicScopes>
 
   rule  loadUnitFromYaml(UnitYaml:Sequence, Restore:RestoreLoadUnit )
           =>  readSourceSeq( UnitYaml )
@@ -501,6 +514,18 @@ module ORO-SEMANTICS-EXTRINSICS
         //<extrinsics> Extrinsics => .Map </extrinsics>
         //<pendingImports> PendingImports => .List </pendingImports>
         //<extrinsicScopes>... (regextrNewScope |-> ExtrScopeID) => .Map ...</extrinsicScopes>
+
+  rule  useMacrosFromYaml(UnitYaml:Sequence, Restore:RestoreLoadMacros)
+          =>  readSourceSeq( UnitYaml )
+              ~> Restore
+  rule  <k>restoreLoadMacros(LoadingUnit, Refs, Globals, Extrinsics, PendingImports, ExtrScopeID, Runtime) => . ...</k>
+        <currentRuntime> _ => Runtime </currentRuntime>
+        <sourceFile> _ => LoadingUnit </sourceFile>
+        <refs> _ => Refs </refs>
+        <globals> _ => Globals </globals>
+        <extrinsics> _ => Extrinsics </extrinsics>
+        <pendingImports> _ => PendingImports </pendingImports>
+        <extrinsicScopes>... .Map => regextrNewScope |-> ExtrScopeID </extrinsicScopes>
 
   // TODO: "Oro/Core/Macro/Use from"
   rule  <k>loadMacros(
