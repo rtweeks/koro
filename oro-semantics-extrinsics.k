@@ -678,7 +678,6 @@ module ORO-SEMANTICS-EXTRINSICS
   syntax K  ::= "captureSubroutineResult" "(" K ")"
   rule  <k>executeReturningSubroutine(Args, ArgVals, E', XS', Body, Tag) =>
             enterSubroutine(XS', E')
-            ~> registerExtrinsics(Body)
             ~> enterScope(Args, ScopeBin)
             ~> assignArguments(ArgVals)
             ~> Body
