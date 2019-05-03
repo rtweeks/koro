@@ -12,21 +12,26 @@
     SetItem ( "fluff" ) |-> subroutine ( 2 )
   </extrinsics>
   <extrs>
-    <subr>
-      <id>
-        2
-      </id>
-      <attrs>
-        "args" |-> ( varDecl ( "fluff" : string_type ) , .VarDecls )
-        "returns" |-> string_type
-        "extrScope" |-> 1
-        "env" |-> ( .Map )
-      </attrs>
-      <body>
-        yseqToK ( ( yval ( | "?" | "Oro/Core/Flow/Label" ) |-> yval ( | "?" | "nowhere" ) )
-          , .VarDecls )
-      </body>
-    </subr>
+    <definedSubrs>
+      <subr>
+        <id>
+          2
+        </id>
+        <attrs>
+          "args" |-> ( varDecl ( "fluff" : string_type ) , .VarDecls )
+          "returns" |-> string_type
+          "extrScope" |-> 1
+          "env" |-> ( .Map )
+        </attrs>
+        <body>
+          yseqToK ( ( yval ( | "?" | "Oro/Core/Flow/Label" ) |-> yval ( | "?" | "nowhere" )
+              ) , .VarDecls )
+        </body>
+      </subr>
+    </definedSubrs>
+    <definedMacros>
+      .MacroCellBag
+    </definedMacros>
     <unscannedSubrs>
       .List
     </unscannedSubrs>
@@ -37,17 +42,26 @@
   <currentRuntime>
     1
   </currentRuntime>
+  <nextRuntime>
+    2
+  </nextRuntime>
   <units>
     <unit>
       <runtime>
         1
       </runtime>
+      <loadedByRuntime>
+        .
+      </loadedByRuntime>
       <filepath>
         "test/subr-ret.oro"
       </filepath>
       <subrs>
         SetItem ( "fluff" ) |-> subroutine ( 2 )
       </subrs>
+      <macros>
+        .Map
+      </macros>
     </unit>
   </units>
   <extrinsicScopes>
@@ -77,7 +91,7 @@
     .Map
   </store>
   <storeBins>
-    1 |-> ( 7 , ( 5 , .VarDecls ) )
+    .Map
   </storeBins>
   <arch>
     wordSize |-> 64

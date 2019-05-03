@@ -3,20 +3,24 @@
     ( [ "Oro/CoreLib/Set" , ( ( "base type" |-> "string" ) , ( "empty at" , .VarDecls ) ) ]
       |-> yval ( | "?" | "consume address from variable" ) ) ~> yseqToK ( .VarDecls ) ~> exitScope
     ( 2 , "consume address" |-> var
-      ( memaddr_type , opaque ( 16 ) )
+      ( memaddr_type , opaque ( 17 ) )
       ,
       false ) ~> exitSubroutine ( SetItem ( "consume address" ) |-> subroutine ( 2 )
       SetItem
       ( "consume address from variable" ) |-> subroutine ( 3 )
       ,
-      .Map ) ~> yseqToK ( .VarDecls ) ~> exitScope ( 1 , "some global value" |-> var
-      ( string_type , opaque ( 6 ) )
+      .Map
+      ,
+      2 ) ~> yseqToK ( .VarDecls ) ~> exitScope ( 1 , "some global value" |-> var
+      ( string_type , opaque ( 4 ) )
       ,
       true ) ~> exitSubroutine ( SetItem ( "consume address" ) |-> subroutine ( 2 )
       SetItem
       ( "consume address from variable" ) |-> subroutine ( 3 )
       ,
-      .Map ) ~> yseqToK ( .VarDecls ) ~> exitScope ( 0 , .Map , true )
+      .Map
+      ,
+      1 ) ~> yseqToK ( .VarDecls ) ~> exitScope ( 0 , .Map , true )
   </k>
   <sourceFile>
     "test/consume-addr-of-global-fwddecl.oro"
@@ -30,36 +34,41 @@
     ( "consume address from variable" ) |-> subroutine ( 3 )
   </extrinsics>
   <extrs>
-    <subr>
-      <id>
-        3
-      </id>
-      <attrs>
-        "args" |-> ( varDecl ( "consume address from variable" : memaddr_type ) , .VarDecls
-          )
-        "env" |-> ( .Map )
-        "extrScope" |-> 1
-      </attrs>
-      <body>
-        yseqToK ( ( [ "Oro/CoreLib/Set" , ( ( "base type" |-> "string" ) , ( "empty at" , .VarDecls
-                  ) ) ] |-> yval ( | "?" | "consume address from variable" ) ) , .VarDecls
-          )
-      </body>
-    </subr>
-    <subr>
-      <id>
-        2
-      </id>
-      <attrs>
-        "args" |-> ( varDecl ( "consume address" : memaddr_type ) , .VarDecls )
-        "env" |-> ( .Map )
-        "extrScope" |-> 1
-      </attrs>
-      <body>
-        yseqToK ( ( yval ( | "?" | "consume address from variable" ) |-> yval ( | "?" | "consume address"
-              ) ) , .VarDecls )
-      </body>
-    </subr>
+    <definedSubrs>
+      <subr>
+        <id>
+          3
+        </id>
+        <attrs>
+          "args" |-> ( varDecl ( "consume address from variable" : memaddr_type ) , .VarDecls
+            )
+          "env" |-> ( .Map )
+          "extrScope" |-> 1
+        </attrs>
+        <body>
+          yseqToK ( ( [ "Oro/CoreLib/Set" , ( ( "base type" |-> "string" ) , ( "empty at" ,
+                    .VarDecls ) ) ] |-> yval ( | "?" | "consume address from variable" ) )
+            , .VarDecls )
+        </body>
+      </subr>
+      <subr>
+        <id>
+          2
+        </id>
+        <attrs>
+          "args" |-> ( varDecl ( "consume address" : memaddr_type ) , .VarDecls )
+          "env" |-> ( .Map )
+          "extrScope" |-> 1
+        </attrs>
+        <body>
+          yseqToK ( ( yval ( | "?" | "consume address from variable" ) |-> yval ( | "?" | "consume address"
+                ) ) , .VarDecls )
+        </body>
+      </subr>
+    </definedSubrs>
+    <definedMacros>
+      .MacroCellBag
+    </definedMacros>
     <unscannedSubrs>
       .List
     </unscannedSubrs>
@@ -70,11 +79,17 @@
   <currentRuntime>
     1
   </currentRuntime>
+  <nextRuntime>
+    2
+  </nextRuntime>
   <units>
     <unit>
       <runtime>
         1
       </runtime>
+      <loadedByRuntime>
+        .
+      </loadedByRuntime>
       <filepath>
         "test/consume-addr-of-global-fwddecl.oro"
       </filepath>
@@ -83,6 +98,9 @@
         SetItem
         ( "consume address from variable" ) |-> subroutine ( 3 )
       </subrs>
+      <macros>
+        .Map
+      </macros>
     </unit>
   </units>
   <extrinsicScopes>
@@ -105,23 +123,23 @@
     </labels>
     <env>
       "consume address from variable" |-> var
-      ( memaddr_type , opaque ( 18 ) )
+      ( memaddr_type , opaque ( 19 ) )
     </env>
   </context>
   <globals>
     "some global value" |-> var
-    ( string_type , opaque ( 6 ) )
+    ( string_type , opaque ( 4 ) )
   </globals>
   <store>
-    16 |-> opaque_ptr
-    ( string_type , 6 )
-    18 |-> opaque_ptr
-    ( string_type , 6 )
-    6 |-> ""
+    4 |-> ""
+    17 |-> opaque_ptr
+    ( string_type , 4 )
+    19 |-> opaque_ptr
+    ( string_type , 4 )
   </store>
   <storeBins>
-    1 |-> ( 16 , .VarDecls )
-    2 |-> ( 18 , .VarDecls )
+    1 |-> ( 17 , .VarDecls )
+    2 |-> ( 19 , .VarDecls )
   </storeBins>
   <arch>
     wordSize |-> 64

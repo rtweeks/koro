@@ -13,7 +13,12 @@
     .Map
   </extrinsics>
   <extrs>
-    .SubrCellBag
+    <definedSubrs>
+      .SubrCellBag
+    </definedSubrs>
+    <definedMacros>
+      .MacroCellBag
+    </definedMacros>
     <unscannedSubrs>
       .List
     </unscannedSubrs>
@@ -24,17 +29,26 @@
   <currentRuntime>
     1
   </currentRuntime>
+  <nextRuntime>
+    2
+  </nextRuntime>
   <units>
     <unit>
       <runtime>
         1
       </runtime>
+      <loadedByRuntime>
+        .
+      </loadedByRuntime>
       <filepath>
         "test/hello-var.oro"
       </filepath>
       <subrs>
         .Map
       </subrs>
+      <macros>
+        .Map
+      </macros>
     </unit>
   </units>
   <extrinsicScopes>
@@ -55,15 +69,15 @@
     </labels>
     <env>
       "useless" |-> var
-      ( string_type , opaque ( 4 ) )
+      ( string_type , opaque ( 2 ) )
     </env>
   </context>
   <globals>
     "useless" |-> var
-    ( string_type , opaque ( 4 ) )
+    ( string_type , opaque ( 2 ) )
   </globals>
   <store>
-    4 |-> ""
+    2 |-> ""
   </store>
   <storeBins>
     .Map

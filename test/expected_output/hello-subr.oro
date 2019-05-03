@@ -3,7 +3,9 @@
     ( "print" |-> yval ( | "?" | "\u6253\u5370" ) ) ~> yseqToK ( .VarDecls ) ~> exitScope (
       1 , .Map , true ) ~> exitSubroutine ( SetItem ( "\u6253\u5370" ) |-> subroutine ( 2 )
       ,
-      .Map )
+      .Map
+      ,
+      1 )
   </k>
   <sourceFile>
     "test/hello-subr.oro"
@@ -15,20 +17,25 @@
     SetItem ( "\u6253\u5370" ) |-> subroutine ( 2 )
   </extrinsics>
   <extrs>
-    <subr>
-      <id>
-        2
-      </id>
-      <attrs>
-        "args" |-> ( varDecl ( "\u6253\u5370" : string_type ) , .VarDecls )
-        "env" |-> ( .Map )
-        "extrScope" |-> 1
-      </attrs>
-      <body>
-        yseqToK ( ( yval ( | "?" | "print" ) |-> yval ( | "?" | "\u6253\u5370" ) ) , .VarDecls
-          )
-      </body>
-    </subr>
+    <definedSubrs>
+      <subr>
+        <id>
+          2
+        </id>
+        <attrs>
+          "args" |-> ( varDecl ( "\u6253\u5370" : string_type ) , .VarDecls )
+          "env" |-> ( .Map )
+          "extrScope" |-> 1
+        </attrs>
+        <body>
+          yseqToK ( ( yval ( | "?" | "print" ) |-> yval ( | "?" | "\u6253\u5370" ) ) , .VarDecls
+            )
+        </body>
+      </subr>
+    </definedSubrs>
+    <definedMacros>
+      .MacroCellBag
+    </definedMacros>
     <unscannedSubrs>
       .List
     </unscannedSubrs>
@@ -39,17 +46,26 @@
   <currentRuntime>
     1
   </currentRuntime>
+  <nextRuntime>
+    2
+  </nextRuntime>
   <units>
     <unit>
       <runtime>
         1
       </runtime>
+      <loadedByRuntime>
+        .
+      </loadedByRuntime>
       <filepath>
         "test/hello-subr.oro"
       </filepath>
       <subrs>
         SetItem ( "\u6253\u5370" ) |-> subroutine ( 2 )
       </subrs>
+      <macros>
+        .Map
+      </macros>
     </unit>
   </units>
   <extrinsicScopes>
@@ -70,17 +86,17 @@
     </labels>
     <env>
       "\u6253\u5370" |-> var
-      ( string_type , opaque ( 5 ) )
+      ( string_type , opaque ( 6 ) )
     </env>
   </context>
   <globals>
     .Map
   </globals>
   <store>
-    5 |-> "\u4f60\u597d\uff0c\u4e16\u754c\u3002\n"
+    6 |-> "\u4f60\u597d\uff0c\u4e16\u754c\u3002\n"
   </store>
   <storeBins>
-    1 |-> ( 5 , .VarDecls )
+    1 |-> ( 6 , .VarDecls )
   </storeBins>
   <arch>
     wordSize |-> 64

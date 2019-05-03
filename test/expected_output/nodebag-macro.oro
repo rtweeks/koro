@@ -33,9 +33,15 @@
         <mid>
           3
         </mid>
+        <mruntime>
+          1
+        </mruntime>
         <mkeys>
           SetItem ( "node bag" )
         </mkeys>
+        <menv>
+          .Map
+        </menv>
         <mextrScope>
           1
         </mextrScope>
@@ -54,11 +60,17 @@
   <currentRuntime>
     1
   </currentRuntime>
+  <nextRuntime>
+    2
+  </nextRuntime>
   <units>
     <unit>
       <runtime>
         1
       </runtime>
+      <loadedByRuntime>
+        .
+      </loadedByRuntime>
       <filepath>
         "test/nodebag-macro.oro"
       </filepath>
