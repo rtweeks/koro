@@ -14,30 +14,36 @@ module ORO-SEMANTICS-EXTRINSICS
   imports FILE-PATH
 
   syntax K  ::= "registerExtrinsics" "(" K ")"
-              | "regextrNewScope"
-              | "regextr" "(" K ")"
-              | "regextrResolveImports"
-              | "regextrCaptureScope"
-              | "regextrScanBodies" "(" List ")"
-              | "regextrUpdateSubr" "(" Int ")"
-              | "regextrRestoreOuter" "(" Map ")"
-              | "registerResolvedExtrinsic" "(" Map ")"
-              | "nsskeyResolvedInExtrinsicScan"
-              | "registerSubr" "(" Map ")"
-              | "subrReturns"
-              | "subrAccumArg"
-              | "subrImportReturns"
-              | "subrImportAccumArg"
-              | "subrRetImportAccumArg"
-              | "registerFun" "(" Map ")"
-              | "nsskeyResolvedInFunArgs"
-              | "registerImport" "(" Map ")"
+              | ExtrinsicRegistrationInternals
               | "loadUnitFromYaml" "(" K "," RestoreLoadUnit ")"         [function]
               | "loadMacros" "(" Map ")"
+              | "macrosLoadToExtrinsics" "(" String ")"
+              | "useMacrosFromYaml" "(" K "," RestoreLoadMacros ")"       [function]
               | SubroutineImportDetails
               | Subroutine
               | StatementCallableAgg
+              | "macro" "(" Int ")"
 
+  syntax ExtrinsicRegistrationInternals ::= "regextrNewScope"
+                                          | "regextr" "(" K ")"
+                                          | "regextrResolveImports"
+                                          | "regextrCaptureScope"
+                                          | "regextrScanBodies" "(" List ")"
+                                          | "regextrUpdateSubr" "(" Int ")"
+                                          | "regextrUpdateMacro" "(" Int ")"
+                                          | "regextrRestoreOuter" "(" Map ")"
+                                          | "registerResolvedExtrinsic" "(" Map ")"
+                                          | "nsskeyResolvedInExtrinsicScan"
+                                          | "registerSubr" "(" Map ")"
+                                          | "subrReturns"
+                                          | "subrAccumArg"
+                                          | "subrImportReturns"
+                                          | "subrImportAccumArg"
+                                          | "subrRetImportAccumArg"
+                                          | "registerFun" "(" Map ")"
+                                          | "nsskeyResolvedInFunArgs"
+                                          | "registerMacro" "(" Map ")"
+                                          | "registerImport" "(" Map ")"
   /*
     subroutine and function capture <env/> after the first semicolon,
     <extrinsics/> after the second, and the subroutine body as the final
@@ -84,6 +90,20 @@ module ORO-SEMANTICS-EXTRINSICS
         <extrinsicScopes>... XSKey |-> XS' ...</extrinsicScopes>
         <extrinsics> XS => XS' </extrinsics>
         <declScanInSubrs> _ => true </declScanInSubrs>
+  rule  <k>regextrScanBodies( ListItem(MacId:Int) Rest:List )
+          =>  registerExtrinsics( Body )
+              ~> regextrUpdateMacro( MacId )
+              ~> regextrRestoreOuter( XS )
+              ~> regextrScanBodies( Rest )
+        ...</k>
+        <macro>...
+          <mid> MacId </mid>
+          <mextrScope> XSKey </mextrScope>
+          <mbody> Body </mbody>
+        ...</macro>
+        <extrinsicScopes>... XSKey |-> XS' ...</extrinsicScopes>
+        <extrinsics> XS => XS' </extrinsics>
+        <declScanInSubrs> _ => true </declScanInSubrs>
   rule  <k>regextrUpdateSubr( SubrId ) => . ...</k>
         <subr>...
           <id> SubrId </id>
@@ -97,6 +117,21 @@ module ORO-SEMANTICS-EXTRINSICS
           <id> SubrId </id>
           <attrs>... "extrScope" |-> XSKey:Int ...</attrs>
         ...</subr>
+        <extrinsics> XS </extrinsics>
+        <extrinsicScopes>... XSKey |-> XS ...</extrinsicScopes>
+  rule  <k>regextrUpdateMacro( MacId ) => . ...</k>
+        <macro>...
+          <mid> MacId </mid>
+          <mextrScope> OuterXSKey => !XSKey:Int </mextrScope>
+        ...</macro>
+        <extrinsics> XS </extrinsics>
+        <extrinsicScopes> XSS => XSS[!XSKey <- XS] </extrinsicScopes>
+        requires XSS[OuterXSKey] =/=K XS
+  rule  <k>regextrUpdateMacro( MacId ) => . ...</k>
+        <macro>...
+          <mid> MacId </mid>
+          <mextrScope> XSKey:Int </mextrScope>
+        ...</macro>
         <extrinsics> XS </extrinsics>
         <extrinsicScopes>... XSKey |-> XS ...</extrinsicScopes>
   rule  <k>regextrRestoreOuter( XS ) => . ...</k>
@@ -122,6 +157,8 @@ module ORO-SEMANTICS-EXTRINSICS
         requires  keys(M) in SetItem(skeysDefineSubr)
   rule  registerResolvedExtrinsic( M ) => registerFun( M )
         requires  keys(M) in SetItem(skeysDefineFun)
+  rule  registerResolvedExtrinsic( M ) => registerMacro( M )
+        requires  keys(M) ==K skeysDefineMacro
   rule  registerResolvedExtrinsic( M ) => registerImport( M )
         requires  keys(M) in SetItem(skeysImportFrom)
         orBool    keys(M) in SetItem(skeysImportReturningFrom)
@@ -161,6 +198,8 @@ module ORO-SEMANTICS-EXTRINSICS
           orBool
           (keys(M) in SetItem(skeysDefineFun))
           orBool
+          (keys(M) in SetItem(skeysDefineMacro))
+          orBool
           (keys(M) in SetItem(skeysImportFrom))
           orBool
           (keys(M) in SetItem(skeysUseMacros))
@@ -188,10 +227,12 @@ module ORO-SEMANTICS-EXTRINSICS
         <declScanInSubrs> false </declScanInSubrs>
         <sourceFile> CurrentUnit </sourceFile>
         <extrinsics>... .Map => varNames(Args) |-> subroutine( !SId )</extrinsics>
-        <unit>
+        <currentRuntime> Runtime </currentRuntime>
+        <unit>...
+          <runtime> Runtime </runtime>
           <filepath> CurrentUnit </filepath>
           <subrs>... .Map => varNames(Args) |-> subroutine( !SId ) </subrs>
-        </unit>
+        ...</unit>
         (.Bag => <subr>...
           <id> !SId:Int </id>
           <attrs>
@@ -246,10 +287,12 @@ module ORO-SEMANTICS-EXTRINSICS
         <extrinsics>...
           .Map => varNames(Args) |-> subroutine( !SId )
         </extrinsics>
-        <unit>
+        <currentRuntime> Runtime </currentRuntime>
+        <unit>...
+          <runtime> Runtime </runtime>
           <filepath> CurrentUnit </filepath>
           <subrs>... .Map => varNames(Args) |-> subroutine( !SId ) </subrs>
-        </unit>
+        ...</unit>
         (.Bag => <subr>...
           <id> !SId:Int </id>
           <attrs>
@@ -279,7 +322,33 @@ module ORO-SEMANTICS-EXTRINSICS
         ...</subr>)
         <unscannedSubrs>... .List => ListItem(!SId) </unscannedSubrs>
         // TODO: requires notOverridingIntrinsic(Args)
-  // TODO: "Oro/Core/Subroutine/Import" "from"
+
+  rule  <k>registerMacro(
+          ("Oro/Core/Macro/Define" |-> [ Keys ])
+          ("as" |-> [ Body ])
+        ) => .
+        ...</k>
+        <declScanInSubrs> false </declScanInSubrs>
+        <sourceFile> CurrentUnit </sourceFile>
+        <currentRuntime> Runtime </currentRuntime>
+        <unit>...
+          <runtime> Runtime </runtime>
+          <filepath> CurrentUnit </filepath>
+          <macros>... .Map => keySequence2Set(Keys) |-> macro( !MId:Int ) </macros>
+        ...</unit>
+        (.Bag => <macro>...
+          <mid> !MId </mid>
+          <mruntime> Runtime </mruntime>
+          <mkeys> keySequence2Set(Keys) </mkeys>
+          <menv> Env </menv>
+          <mextrScope> XSKey </mextrScope>
+          <mbody> yseqToK(Body) </mbody>
+        ...</macro>)
+        <unscannedSubrs>... .List => ListItem(!MId) </unscannedSubrs>
+        <env> Env </env>
+        <extrinsicScopes>... regextrNewScope |-> XSKey ...</extrinsicScopes>
+        // TODO: requires notOverridingIntrinsic(keySequence2Set(Keys))
+
   rule  <k>registerImport(
           ("Oro/Core/Subroutine/Import" |-> [ Args ])
           ("from" |-> RelativePath:String )
@@ -339,19 +408,39 @@ module ORO-SEMANTICS-EXTRINSICS
   rule  <k>regextrResolveImports => . ...</k>
         <pendingImports> .List </pendingImports>
 
+  syntax K  ::= "unitRef" "(" Int String ")"
   syntax Bool ::= "loadedUnit" "(" String /* filepath */ ")"    [function]
-  rule  <k>loadedUnit(UnitPath) => true ...</k>
-        <unit>... <filepath>UnitPath</filepath> ...</unit>
-  rule  loadedUnit(_) => false            [owise]
+  rule  <k>loadedUnit(UnitPath) => (unitRef(Runtime UnitPath) in LUs) ...</k>
+        <currentRuntime> Runtime </currentRuntime>
+        <loadedUnits> LUs </loadedUnits>
+  syntax Bool ::= "macrosLoaded" "(" String /* filepath */ ")"    [function]
+  rule  <k>macrosLoaded(UnitPath) => true ...</k>
+        <currentRuntime> Runtime </currentRuntime>
+        <unit>...
+          <loadedByRuntime> Runtime </loadedByRuntime>
+          <filepath> UnitPath </filepath>
+        ...</unit>
+  rule  macrosLoaded(_) => false
   rule  <k>regextrResolveImports ...</k>
         <pendingImports> ListItem(subrImportToExtrinsics(UnitPath, ArgDeclMap)) => .List ...</pendingImports>
+        <currentRuntime> Runtime </currentRuntime>
         <unit>...
+          <runtime> Runtime </runtime>
           <filepath> UnitPath </filepath>
           <subrs> UnitExports:Map </subrs>
         ...</unit>
         <extrinsics>...
           .Map => keys(ArgDeclMap) |-> UnitExports[keys(ArgDeclMap)]
         </extrinsics>
+  rule  <k>regextrResolveImports ...</k>
+        <pendingImports> ListItem(macrosLoadToExtrinsics(UnitPath)) => .List ...</pendingImports>
+        <currentRuntime> Runtime </currentRuntime>
+        <unit>...
+          <loadedByRuntime> Runtime:Int </loadedByRuntime>
+          <filepath> UnitPath </filepath>
+          <macros> ProvidedMacros:Map </macros>
+        ...</unit>
+        <extrinsics>... .Map => ProvidedMacros </extrinsics>
   syntax K  ::= "prepLoadUnit" "(" String /* sourceFile */ ")"
   syntax RestoreLoadUnit ::= "restoreLoadUnit" "(" String /* sourceFile */ "," Map /* refs */ "," Map /* globals */ "," Map /* extrinsics */ "," List /* pendingImports */ "," Int /* regextrNewScope */ ")"
   rule  <k>regextrResolveImports
@@ -362,16 +451,53 @@ module ORO-SEMANTICS-EXTRINSICS
               )
               ~> regextrResolveImports
         ...</k>
+        <currentRuntime> Runtime </currentRuntime>
         <sourceFile> LoadingUnit </sourceFile>
         <refs> Refs </refs>
         <globals> Globals </globals>
         <extrinsics> Extrinsics </extrinsics>
         <pendingImports> ListItem(subrImportToExtrinsics(UnitPath, ArgDeclMap)) OtherImports:List </pendingImports>
+        <loadedUnits> LUs </loadedUnits>
         <extrinsicScopes>... regextrNewScope |-> ExtrScopeID ...</extrinsicScopes>
-        requires notBool(loadedUnit(UnitPath))
+        requires notBool(unitRef(Runtime UnitPath) in LUs)
   rule  <k>prepLoadUnit(UnitPath) => . ...</k>
+        <currentRuntime> Runtime </currentRuntime>
         <sourceFile> _ => UnitPath </sourceFile>
         (.Bag => <unit>...
+          <runtime> Runtime </runtime>
+          <filepath> UnitPath </filepath>
+        ...</unit>)
+        <loadedUnits>... .Set => SetItem(unitRef(Runtime UnitPath))</loadedUnits>
+        <refs> _ => .Map </refs>
+        <globals> _ => .Map </globals>
+        <extrinsics> _ => .Map </extrinsics>
+        <pendingImports> _ => .List </pendingImports>
+        <extrinsicScopes>... (regextrNewScope |-> _) => .Map ...</extrinsicScopes>
+  syntax K  ::= "prepLoadMacros" "(" Int /* new runtime */ "," String /* sourceFile */ ")"
+  syntax RestoreLoadMacros  ::= "restoreLoadMacros" "(" String /* sourceFile */ "," Map /* refs */ "," Map /* globals */ "," Map /* extrinsics */ "," List /* pendingImports */ "," Int /* regextrNewScope */ "," Int /* currentRuntime */ ")"
+  rule  <k>regextrResolveImports
+          =>  prepLoadMacros(NewRuntime, UnitPath)
+              ~> useMacrosFromYaml(
+                #parseInModule(UnitPath, "Sequence", "ORO-SYNTAX"),
+                restoreLoadMacros(LoadingUnit, Refs, Globals, Extrinsics, (ListItem(macrosLoadToExtrinsics(UnitPath)) OtherImports:List), ExtrScopeID, Runtime)
+              )
+              ~> regextrResolveImports
+        ...</k>
+        <currentRuntime> Runtime </currentRuntime>
+        <nextRuntime> NewRuntime:Int => NewRuntime +Int 1 </nextRuntime>
+        <sourceFile> LoadingUnit </sourceFile>
+        <refs> Refs </refs>
+        <globals> Globals </globals>
+        <extrinsics> Extrinsics </extrinsics>
+        <pendingImports> ListItem(macrosLoadToExtrinsics(UnitPath)) OtherImports:List </pendingImports>
+        <extrinsicScopes>... regextrNewScope |-> ExtrScopeID ...</extrinsicScopes>
+        requires notBool(macrosLoaded(UnitPath))
+  rule  <k>prepLoadMacros(NewRuntime, UnitPath) => . ...</k>
+        <currentRuntime> Runtime => NewRuntime </currentRuntime>
+        <sourceFile> _ => UnitPath </sourceFile>
+        (.Bag => <unit>...
+          <runtime> NewRuntime </runtime>
+          <loadedByRuntime> Runtime </loadedByRuntime>
           <filepath> UnitPath </filepath>
         ...</unit>)
         <refs> _ => .Map </refs>
@@ -380,7 +506,6 @@ module ORO-SEMANTICS-EXTRINSICS
         <pendingImports> _ => .List </pendingImports>
         <extrinsicScopes>... (regextrNewScope |-> _) => .Map ...</extrinsicScopes>
 
-  syntax K  ::= "stop" "(" K ")"
   rule  loadUnitFromYaml(UnitYaml:Sequence, Restore:RestoreLoadUnit )
           =>  readSourceSeq( UnitYaml )
               ~> Restore
@@ -397,11 +522,36 @@ module ORO-SEMANTICS-EXTRINSICS
         //<pendingImports> PendingImports => .List </pendingImports>
         //<extrinsicScopes>... (regextrNewScope |-> ExtrScopeID) => .Map ...</extrinsicScopes>
 
+  rule  useMacrosFromYaml(UnitYaml:Sequence, Restore:RestoreLoadMacros)
+          =>  readSourceSeq( UnitYaml )
+              ~> Restore
+  rule  <k>restoreLoadMacros(LoadingUnit, Refs, Globals, Extrinsics, PendingImports, ExtrScopeID, Runtime) => . ...</k>
+        <currentRuntime> _ => Runtime </currentRuntime>
+        <sourceFile> _ => LoadingUnit </sourceFile>
+        <refs> _ => Refs </refs>
+        <globals> _ => Globals </globals>
+        <extrinsics> _ => Extrinsics </extrinsics>
+        <pendingImports> _ => PendingImports </pendingImports>
+        <extrinsicScopes>... .Map => regextrNewScope |-> ExtrScopeID </extrinsicScopes>
+
   // TODO: "Oro/Core/Macro/Use from"
+  rule  <k>loadMacros(
+          "Oro/Core/Macro/Use from" |-> RelativePath:String
+        ) => .
+        ...</k>
+        <sourceFile> CurrentUnit </sourceFile>
+        <pendingImports>... .List => ListItem(macrosLoadToExtrinsics( #joinPath( #dirnamePath(CurrentUnit), RelativePath ) ))</pendingImports>
+  rule  <k>loadMacros(
+          "Oro/Core/Macro/Use from" |-> yval( |"?"| RelativePath:String )
+        ) => .
+        ...</k>
+        <sourceFile> CurrentUnit </sourceFile>
+        <pendingImports>... .List => ListItem(macrosLoadToExtrinsics( #joinPath( #dirnamePath(CurrentUnit), RelativePath ) ))</pendingImports>
 
   // Don't know why, but the <k>...</k> notation is required here for the disolve rules
   rule  <k>( "Oro/Core/Subroutine/Define" |-> _ "as" |-> _ ) => . ...</k>
   rule  <k>( "Oro/Core/Subroutine/Define" |-> _ "returning" |-> _ "as" |-> _ ) => . ...</k>
+  rule  <k>( "Oro/Core/Macro/Define" |-> _ "as" |-> _) => . ...</k>
   rule  <k>( "Oro/Core/Subroutine/Import" |-> _ "from" |-> _ ) => . ...</k>
   rule  <k>( "Oro/Core/Macro/Use from" |-> _ ) => . ...</k>
 
@@ -415,7 +565,6 @@ module ORO-SEMANTICS-EXTRINSICS
   syntax ReturningSubrCall  ::= "subrCall" "(" K /* Args:VarDecls */ "->" K /* RetType:DataType */ ";" K /* E:Map */ ";" K /* XSKey:Int */ ";" K /* Body:K */ ";" Map /* Call */ ")"
   syntax ArgEval  ::= "evalArg" "(" Data ":" DataType "<-" K ")"
   syntax ArgEvals ::= List{ArgEval, ","}
-  syntax K  ::= "stop" "(" K ")"
   rule  <k> Call:Map => subrCall(
           Subr["args"];
           Subr["env"];
@@ -459,6 +608,55 @@ module ORO-SEMANTICS-EXTRINSICS
           ~> executeSubroutine((varDecl("result" : RetType), Args), .Map, E, XS, Body)
         ...</k>
         <extrinsicScopes>... XSKey |-> XS:Map ...</extrinsicScopes>
+
+  syntax K  ::= "macroInvocation" "(" Int /* runtime */ ";" Map /* env */ ";" Int /* XSKey */ ";" K /* body */ ";" Map /* call */ ")"
+              | "assignMacroArguments" "(" Map "," Int /* scopeBin */ ")"
+              | "assignMacroArgument"
+              | "captureMacroResult" "(" K ")"
+              | "restoreRuntime" "(" Int ")"
+  rule  <k> Call:Map => macroInvocation( Runtime; Env; XSKey; Body; Call ) ...</k>
+        <extrinsics>... keys(Call) |-> macro(MacId) ...</extrinsics>
+        <macro>...
+          <mid> MacId </mid>
+          <mruntime> Runtime </mruntime>
+          <menv> Env </menv>
+          <mextrScope> XSKey </mextrScope>
+          <mbody> Body </mbody>
+        ...</macro>
+  rule  <k>macroInvocation( MacroRuntime; E'; XSKey; Body; Call)
+          =>  enterSubroutine(XS', E')
+              ~> enterScope(.VarDecls, ScopeBin)
+              ~> assignMacroArguments(Call, ScopeBin)
+              ~> Body
+              ~> captureMacroResult(
+                exitScope(ScopeBin, E, ReturnToStartup)
+                ~> exitSubroutine(XS, L, ScopeBin)
+                ~> restoreRuntime(CallingRuntime)
+              )
+        ...</k>
+        <currentRuntime> CallingRuntime => MacroRuntime </currentRuntime>
+        <extrinsicScopes>... XSKey |-> XS' ...</extrinsicScopes>
+        <scopeBin> ScopeBin => ScopeBin +Int 1 </scopeBin>
+        <storeBins>... .Map => (ScopeBin |-> .Ints)</storeBins>
+        <env> E </env>
+        <extrinsics> XS </extrinsics>
+        <labels> L </labels>
+        <startup> ReturnToStartup </startup>
+  rule  <k> assignMacroArguments( .Map, ScopeBin ) => . ...</k>
+        <env>... .Map => ("result" |-> var(yamlnode_type, opaque(!L:Int))) </env>
+        <store>... .Map => (!L |-> (.Map)) </store>
+        <storeBins>... ScopeBin |-> (Ls => (!L, Ls)) ...</storeBins>
+  rule  assignMacroArguments( ArgVals, ScopeBin ) => assignMacroArgument ~> choice(ArgVals) ~> assignMacroArguments( ArgVals, ScopeBin )
+        requires size(ArgVals) >Int 0
+  rule  <k>assignMacroArgument ~> N ~> assignMacroArguments( ArgVals, ScopeBin ) => assignMacroArguments( ArgVals[N <- undef], ScopeBin ) ...</k>
+        <env>... .Map => (N |-> var(yamlnode_type, opaque(!L:Int))) </env>
+        <store>... .Map => (!L |-> ArgVals[N]) </store>
+        <storeBins>... ScopeBin |-> (Ls => (!L, Ls)) ...</storeBins>
+  rule  <k>captureMacroResult(CloseScope) => CloseScope ~> OutputCode ...</k>
+        <env>... "result" |-> var(_, opaque(L)) ...</env>
+        <store>... L |-> OutputCode ...</store>
+  rule  <k>restoreRuntime(Runtime) => . ...</k>
+        <currentRuntime> _ => Runtime </currentRuntime>
 
   syntax K  ::= "evaluate" "(" DataType ":" ReturningSubrCall "," K ")"
   rule  <k> evaluate(T : (Call:Map), Tag ) =>
@@ -516,14 +714,14 @@ module ORO-SEMANTICS-EXTRINSICS
   syntax K  ::= "enterSubroutine" "(" Map /* extrinsics */ "," Map /* env */ ")"
               | "assignArguments" "(" Map ")"
               | "assignArgument"
-              | "exitSubroutine" "(" Map /* extrinsics */ "," Map /* labels */ ")"
+              | "exitSubroutine" "(" Map /* extrinsics */ "," Map /* labels */ "," Int /* scopeBin */ ")"
   rule  <k>executeSubroutine(Args, ArgVals, E', XS', Body) =>
             enterSubroutine(XS', E')
             ~> enterScope(Args, ScopeBin)
             ~> assignArguments(ArgVals)
             ~> Body
             ~> exitScope(ScopeBin, E, ReturnToStartup)
-            ~> exitSubroutine(XS, L) ...</k>
+            ~> exitSubroutine(XS, L, ScopeBin) ...</k>
         <scopeBin> ScopeBin => ScopeBin +Int 1 </scopeBin>
         <storeBins>... .Map => (ScopeBin |-> .Ints) ...</storeBins>
         <env> E </env>
@@ -534,13 +732,12 @@ module ORO-SEMANTICS-EXTRINSICS
   syntax K  ::= "captureSubroutineResult" "(" K ")"
   rule  <k>executeReturningSubroutine(Args, ArgVals, E', XS', Body, Tag) =>
             enterSubroutine(XS', E')
-            ~> registerExtrinsics(Body)
             ~> enterScope(Args, ScopeBin)
             ~> assignArguments(ArgVals)
             ~> Body
             ~> captureSubroutineResult(
               exitScope(ScopeBin, E, ReturnToStartup)
-              ~> exitSubroutine(XS, L)
+              ~> exitSubroutine(XS, L, ScopeBin)
               ~> Tag
             )
         ...</k>
@@ -564,9 +761,10 @@ module ORO-SEMANTICS-EXTRINSICS
         <store>... L |-> (_ => ArgVals[N]) ...</store>
   /* TODO: Handle <env>... N |-> var(_, bytes(L, 0)) ...</env> */
 
-  rule  <k>exitSubroutine(XS, L) => . ...</k>
+  rule  <k>exitSubroutine(XS, L, ScopeBin) => . ...</k>
         <extrinsics> _ => XS </extrinsics>
         <labels> _ => L </labels>
+        <storeBins>... (ScopeBin |-> _) => .Map ...</storeBins>
 
   rule  <k>captureSubroutineResult(CloseScope) => CloseScope ~> RetVal ...</k>
         <env>... "result" |-> var(_, opaque(L)) ...</env>

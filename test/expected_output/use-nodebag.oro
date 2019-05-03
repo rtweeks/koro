@@ -1,40 +1,55 @@
 <T>
   <k>
-    ( "print" |-> yval ( | "?" | "\u6253\u5370" ) ) ~> yseqToK ( .VarDecls ) ~> exitScope (
-      1 , .Map , true ) ~> exitSubroutine ( SetItem ( "\u6253\u5370" ) |-> subroutine ( 2 )
-      ,
-      .Map
-      ,
-      1 )
+    .
   </k>
   <sourceFile>
-    "test/hello-subr.oro"
+    "test/use-nodebag.oro"
   </sourceFile>
   <refs>
     .Map
   </refs>
   <extrinsics>
-    SetItem ( "\u6253\u5370" ) |-> subroutine ( 2 )
+    SetItem ( "node bag" ) |-> macro
+    ( 4 )
   </extrinsics>
   <extrs>
     <definedSubrs>
       <subr>
         <id>
-          2
+          3
         </id>
         <attrs>
-          "args" |-> ( varDecl ( "\u6253\u5370" : string_type ) , .VarDecls )
+          "args" |-> ( varDecl ( "fluff" : string_type ) , .VarDecls )
           "env" |-> ( .Map )
-          "extrScope" |-> 1
+          "extrScope" |-> 2
         </attrs>
         <body>
-          yseqToK ( ( yval ( | "?" | "print" ) |-> yval ( | "?" | "\u6253\u5370" ) ) , .VarDecls
-            )
+          yseqToK ( ( yval ( | "?" | "Oro/Core/Flow/Label" ) |-> yval ( | "?" | "nowhere" )
+              ) , .VarDecls )
         </body>
       </subr>
     </definedSubrs>
     <definedMacros>
-      .MacroCellBag
+      <macro>
+        <mid>
+          4
+        </mid>
+        <mruntime>
+          2
+        </mruntime>
+        <mkeys>
+          SetItem ( "node bag" )
+        </mkeys>
+        <menv>
+          .Map
+        </menv>
+        <mextrScope>
+          2
+        </mextrScope>
+        <mbody>
+          yseqToK ( .VarDecls )
+        </mbody>
+      </macro>
     </definedMacros>
     <unscannedSubrs>
       .List
@@ -47,9 +62,27 @@
     1
   </currentRuntime>
   <nextRuntime>
-    2
+    3
   </nextRuntime>
   <units>
+    <unit>
+      <runtime>
+        2
+      </runtime>
+      <loadedByRuntime>
+        1
+      </loadedByRuntime>
+      <filepath>
+        "test/nodebag-macro.oro"
+      </filepath>
+      <subrs>
+        SetItem ( "fluff" ) |-> subroutine ( 3 )
+      </subrs>
+      <macros>
+        SetItem ( "node bag" ) |-> macro
+        ( 4 )
+      </macros>
+    </unit>
     <unit>
       <runtime>
         1
@@ -58,10 +91,10 @@
         .
       </loadedByRuntime>
       <filepath>
-        "test/hello-subr.oro"
+        "test/use-nodebag.oro"
       </filepath>
       <subrs>
-        SetItem ( "\u6253\u5370" ) |-> subroutine ( 2 )
+        .Map
       </subrs>
       <macros>
         .Map
@@ -72,13 +105,13 @@
     .Set
   </loadedUnits>
   <extrinsicScopes>
-    1 |-> ( SetItem ( "\u6253\u5370" ) |-> subroutine ( 2 ) )
+    2 |-> ( SetItem ( "fluff" ) |-> subroutine ( 3 ) )
   </extrinsicScopes>
   <scopeBin>
     2
   </scopeBin>
   <startup>
-    false
+    true
   </startup>
   <declScanInSubrs>
     false
@@ -88,18 +121,17 @@
       .Map
     </labels>
     <env>
-      "\u6253\u5370" |-> var
-      ( string_type , opaque ( 6 ) )
+      .Map
     </env>
   </context>
   <globals>
     .Map
   </globals>
   <store>
-    6 |-> "\u4f60\u597d\uff0c\u4e16\u754c\u3002\n"
+    .Map
   </store>
   <storeBins>
-    1 |-> ( 6 , .VarDecls )
+    .Map
   </storeBins>
   <arch>
     wordSize |-> 64

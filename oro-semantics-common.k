@@ -9,20 +9,38 @@ module ORO-SEMANTICS-COMMON
     <refs> .Map </refs>
     <extrinsics> .Map </extrinsics>
     <extrs>
-      <subr multiplicity="*">
-        <id> -1 </id>
-        <attrs> .Map </attrs> /* "args", "returns"?, "env", "extrScope"  */
-        <body> . </body>
-      </subr>
+      <definedSubrs>
+        <subr multiplicity="*">
+          <id> -1 </id>
+          <attrs> .Map </attrs> /* "args", "returns"?, "env", "extrScope"  */
+          <body> . </body>
+        </subr>
+      </definedSubrs>
+      <definedMacros>
+        <macro multiplicity="*">
+          <mid> -1 </mid>
+          <mruntime> -3 </mruntime>
+          <mkeys> .Set </mkeys>
+          <menv> .Map </menv>
+          <mextrScope> -1 </mextrScope>
+          <mbody> . </mbody>
+        </macro>
+      </definedMacros>
       <unscannedSubrs> .List </unscannedSubrs>
     </extrs>
     <pendingImports> .List </pendingImports>
+    <currentRuntime> 1 </currentRuntime>
+    <nextRuntime> 2 </nextRuntime>
     <units>
       <unit multiplicity="*">
+        <runtime> -1 </runtime>
+        <loadedByRuntime> . </loadedByRuntime>
         <filepath> "" </filepath>
         <subrs> .Map </subrs>
+        <macros> .Map </macros>
       </unit>
     </units>
+    <loadedUnits> .Set </loadedUnits> /* Set of (runtime filepath) tuples :( */
     <extrinsicScopes> .Map </extrinsicScopes>
     <scopeBin> 1 </scopeBin>
     <startup> true </startup>
@@ -64,11 +82,14 @@ module ORO-SEMANTICS-COMMON
   syntax Ints ::= List{Int, ","}
 
   rule  <k>unpackSourcePath( . _ Val ) => . ...</k>
+        <currentRuntime> Runtime </currentRuntime>
         <sourceFile> _ => Val </sourceFile>
         (.Bag => <unit>...
+          <runtime> Runtime </runtime>
           <filepath>Val</filepath>
         ...</unit>)
 
+  rule  <k>(.Map) => . ...</k>
   rule  <k>yseqToK( .Datas ) => . ...</k>
   rule  <k>yseqToK( M:Map, Ds ) => M ~> yseqToK( Ds ) ...</k>
 
@@ -95,4 +116,11 @@ module ORO-SEMANTICS-COMMON
   rule  isGenericSequence(yseq(|"!"| _)) => true
   rule  isGenericSequence(yseq(|"tag:yaml.org,2002:seq"| _)) => true
   rule  isGenericSequence(_) => false     [owise]
+
+  syntax Set  ::= "keySequence2Set" "(" Datas ")"              [function]
+  rule  keySequence2Set(  .Datas  ) => .Set
+  rule  keySequence2Set(  yval(|"?"| V), Rest:Datas ) => SetItem(V) keySequence2Set(  Rest  )
+  rule  keySequence2Set(  yval(|T| V), Rest:Datas ) => SetItem(yval(|T| V)) keySequence2Set(  Rest  )
+        requires T =/=String "?"
+  rule  keySequence2Set(  V:FixedTypeData, Rest:Datas ) => SetItem(V) keySequence2Set(  Rest  )
 endmodule

@@ -1,22 +1,54 @@
 <T>
   <k>
-    ( "print" |-> "Hello, " ) ~> ( yval ( | "?" | "print" ) |-> "world!\n" )
+    .
   </k>
   <sourceFile>
-    "test/hello2.oro"
+    "test/nodebag-macro.oro"
   </sourceFile>
   <refs>
     .Map
   </refs>
   <extrinsics>
-    .Map
+    SetItem ( "fluff" ) |-> subroutine ( 2 )
   </extrinsics>
   <extrs>
     <definedSubrs>
-      .SubrCellBag
+      <subr>
+        <id>
+          2
+        </id>
+        <attrs>
+          "args" |-> ( varDecl ( "fluff" : string_type ) , .VarDecls )
+          "env" |-> ( .Map )
+          "extrScope" |-> 1
+        </attrs>
+        <body>
+          yseqToK ( ( yval ( | "?" | "Oro/Core/Flow/Label" ) |-> yval ( | "?" | "nowhere" )
+              ) , .VarDecls )
+        </body>
+      </subr>
     </definedSubrs>
     <definedMacros>
-      .MacroCellBag
+      <macro>
+        <mid>
+          3
+        </mid>
+        <mruntime>
+          1
+        </mruntime>
+        <mkeys>
+          SetItem ( "node bag" )
+        </mkeys>
+        <menv>
+          .Map
+        </menv>
+        <mextrScope>
+          1
+        </mextrScope>
+        <mbody>
+          yseqToK ( .VarDecls )
+        </mbody>
+      </macro>
     </definedMacros>
     <unscannedSubrs>
       .List
@@ -40,13 +72,14 @@
         .
       </loadedByRuntime>
       <filepath>
-        "test/hello2.oro"
+        "test/nodebag-macro.oro"
       </filepath>
       <subrs>
-        .Map
+        SetItem ( "fluff" ) |-> subroutine ( 2 )
       </subrs>
       <macros>
-        .Map
+        SetItem ( "node bag" ) |-> macro
+        ( 3 )
       </macros>
     </unit>
   </units>
@@ -54,7 +87,7 @@
     .Set
   </loadedUnits>
   <extrinsicScopes>
-    .Map
+    1 |-> ( SetItem ( "fluff" ) |-> subroutine ( 2 ) )
   </extrinsicScopes>
   <scopeBin>
     1

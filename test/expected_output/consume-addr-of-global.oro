@@ -9,14 +9,18 @@
       SetItem
       ( "consume address from variable" ) |-> subroutine ( 2 )
       ,
-      .Map ) ~> yseqToK ( .VarDecls ) ~> exitScope ( 1 , "some global value" |-> var
-      ( string_type , opaque ( 6 ) )
+      .Map
+      ,
+      2 ) ~> yseqToK ( .VarDecls ) ~> exitScope ( 1 , "some global value" |-> var
+      ( string_type , opaque ( 7 ) )
       ,
       true ) ~> exitSubroutine ( SetItem ( "consume address" ) |-> subroutine ( 3 )
       SetItem
       ( "consume address from variable" ) |-> subroutine ( 2 )
       ,
-      .Map ) ~> yseqToK ( .VarDecls ) ~> exitScope ( 0 , .Map , true )
+      .Map
+      ,
+      1 ) ~> yseqToK ( .VarDecls ) ~> exitScope ( 0 , .Map , true )
   </k>
   <sourceFile>
     "test/consume-addr-of-global.oro"
@@ -30,36 +34,41 @@
     ( "consume address from variable" ) |-> subroutine ( 2 )
   </extrinsics>
   <extrs>
-    <subr>
-      <id>
-        3
-      </id>
-      <attrs>
-        "args" |-> ( varDecl ( "consume address" : memaddr_type ) , .VarDecls )
-        "env" |-> ( .Map )
-        "extrScope" |-> 1
-      </attrs>
-      <body>
-        yseqToK ( ( yval ( | "?" | "consume address from variable" ) |-> yval ( | "?" | "consume address"
-              ) ) , .VarDecls )
-      </body>
-    </subr>
-    <subr>
-      <id>
-        2
-      </id>
-      <attrs>
-        "args" |-> ( varDecl ( "consume address from variable" : memaddr_type ) , .VarDecls
-          )
-        "env" |-> ( .Map )
-        "extrScope" |-> 1
-      </attrs>
-      <body>
-        yseqToK ( ( [ "Oro/CoreLib/Set" , ( ( "base type" |-> "string" ) , ( "empty at" , .VarDecls
-                  ) ) ] |-> yval ( | "?" | "consume address from variable" ) ) , .VarDecls
-          )
-      </body>
-    </subr>
+    <definedSubrs>
+      <subr>
+        <id>
+          3
+        </id>
+        <attrs>
+          "args" |-> ( varDecl ( "consume address" : memaddr_type ) , .VarDecls )
+          "env" |-> ( .Map )
+          "extrScope" |-> 1
+        </attrs>
+        <body>
+          yseqToK ( ( yval ( | "?" | "consume address from variable" ) |-> yval ( | "?" | "consume address"
+                ) ) , .VarDecls )
+        </body>
+      </subr>
+      <subr>
+        <id>
+          2
+        </id>
+        <attrs>
+          "args" |-> ( varDecl ( "consume address from variable" : memaddr_type ) , .VarDecls
+            )
+          "env" |-> ( .Map )
+          "extrScope" |-> 1
+        </attrs>
+        <body>
+          yseqToK ( ( [ "Oro/CoreLib/Set" , ( ( "base type" |-> "string" ) , ( "empty at" ,
+                    .VarDecls ) ) ] |-> yval ( | "?" | "consume address from variable" ) )
+            , .VarDecls )
+        </body>
+      </subr>
+    </definedSubrs>
+    <definedMacros>
+      .MacroCellBag
+    </definedMacros>
     <unscannedSubrs>
       .List
     </unscannedSubrs>
@@ -67,8 +76,20 @@
   <pendingImports>
     .List
   </pendingImports>
+  <currentRuntime>
+    1
+  </currentRuntime>
+  <nextRuntime>
+    2
+  </nextRuntime>
   <units>
     <unit>
+      <runtime>
+        1
+      </runtime>
+      <loadedByRuntime>
+        .
+      </loadedByRuntime>
       <filepath>
         "test/consume-addr-of-global.oro"
       </filepath>
@@ -77,8 +98,14 @@
         SetItem
         ( "consume address from variable" ) |-> subroutine ( 2 )
       </subrs>
+      <macros>
+        .Map
+      </macros>
     </unit>
   </units>
+  <loadedUnits>
+    .Set
+  </loadedUnits>
   <extrinsicScopes>
     1 |-> ( SetItem ( "consume address" ) |-> subroutine ( 3 )
       SetItem
@@ -104,14 +131,14 @@
   </context>
   <globals>
     "some global value" |-> var
-    ( string_type , opaque ( 6 ) )
+    ( string_type , opaque ( 7 ) )
   </globals>
   <store>
     17 |-> opaque_ptr
-    ( string_type , 6 )
-    6 |-> ""
+    ( string_type , 7 )
     19 |-> opaque_ptr
-    ( string_type , 6 )
+    ( string_type , 7 )
+    7 |-> ""
   </store>
   <storeBins>
     1 |-> ( 17 , .VarDecls )
