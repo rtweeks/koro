@@ -607,7 +607,7 @@ module ORO-SEMANTICS-EXTRINSICS
         <extrinsicScopes>... XSKey |-> XS:Map ...</extrinsicScopes>
 
   syntax K  ::= "macroInvocation" "(" Int /* runtime */ ";" Map /* env */ ";" Int /* XSKey */ ";" K /* body */ ";" Map /* call */ ")"
-              | "assignMacroArguments" "(" Map ")"
+              | "assignMacroArguments" "(" Map "," Int /* scopeBin */ ")"
               | "assignMacroArgument"
               | "captureMacroResult" "(" K ")"
               | "restoreRuntime" "(" Int ")"
@@ -623,7 +623,7 @@ module ORO-SEMANTICS-EXTRINSICS
   rule  <k>macroInvocation( MacroRuntime; E'; XSKey; Body; Call)
           =>  enterSubroutine(XS', E')
               ~> enterScope(.VarDecls, ScopeBin)
-              ~> assignMacroArguments(Call)
+              ~> assignMacroArguments(Call, ScopeBin)
               ~> Body
               ~> captureMacroResult(
                 exitScope(ScopeBin, E, ReturnToStartup)
@@ -639,14 +639,16 @@ module ORO-SEMANTICS-EXTRINSICS
         <extrinsics> XS </extrinsics>
         <labels> L </labels>
         <startup> ReturnToStartup </startup>
-  rule  <k> assignMacroArguments( .Map ) => . ...</k>
+  rule  <k> assignMacroArguments( .Map, ScopeBin ) => . ...</k>
         <env>... .Map => ("result" |-> var(yamlnode_type, opaque(!L:Int))) </env>
         <store>... .Map => (!L |-> (.Map)) </store>
-  rule  assignMacroArguments( ArgVals ) => assignMacroArgument ~> choice(ArgVals) ~> assignMacroArguments( ArgVals )
+        <storeBins>... ScopeBin |-> (Ls => (!L, Ls)) ...</storeBins>
+  rule  assignMacroArguments( ArgVals, ScopeBin ) => assignMacroArgument ~> choice(ArgVals) ~> assignMacroArguments( ArgVals, ScopeBin )
         requires size(ArgVals) >Int 0
-  rule  <k>assignMacroArgument ~> N ~> assignMacroArguments( ArgVals ) => assignMacroArguments( ArgVals[N <- undef] ) ...</k>
+  rule  <k>assignMacroArgument ~> N ~> assignMacroArguments( ArgVals, ScopeBin ) => assignMacroArguments( ArgVals[N <- undef], ScopeBin ) ...</k>
         <env>... .Map => (N |-> var(yamlnode_type, opaque(!L:Int))) </env>
         <store>... .Map => (!L |-> ArgVals[N]) </store>
+        <storeBins>... ScopeBin |-> (Ls => (!L, Ls)) ...</storeBins>
   rule  <k>captureMacroResult(CloseScope) => CloseScope ~> OutputCode ...</k>
         <env>... "result" |-> var(_, opaque(L)) ...</env>
         <store>... L |-> OutputCode ...</store>
