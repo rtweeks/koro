@@ -125,12 +125,10 @@
     .Map
   </globals>
   <store>
-    10 |-> [ yval ( | "?" | "ha" ) , ( yval ( | "?" | "ha" ) , ( yval ( | "?" | "ha" ) , .VarDecls
-          ) ) ]
-    11 |-> ( .Map )
+    .Map
   </store>
   <storeBins>
-    1 |-> .VarDecls
+    .Map
   </storeBins>
   <arch>
     wordSize |-> 64

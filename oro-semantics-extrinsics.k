@@ -627,7 +627,7 @@ module ORO-SEMANTICS-EXTRINSICS
               ~> Body
               ~> captureMacroResult(
                 exitScope(ScopeBin, E, ReturnToStartup)
-                ~> exitSubroutine(XS, L)
+                ~> exitSubroutine(XS, L, ScopeBin)
                 ~> restoreRuntime(CallingRuntime)
               )
         ...</k>
@@ -711,14 +711,14 @@ module ORO-SEMANTICS-EXTRINSICS
   syntax K  ::= "enterSubroutine" "(" Map /* extrinsics */ "," Map /* env */ ")"
               | "assignArguments" "(" Map ")"
               | "assignArgument"
-              | "exitSubroutine" "(" Map /* extrinsics */ "," Map /* labels */ ")"
+              | "exitSubroutine" "(" Map /* extrinsics */ "," Map /* labels */ "," Int /* scopeBin */ ")"
   rule  <k>executeSubroutine(Args, ArgVals, E', XS', Body) =>
             enterSubroutine(XS', E')
             ~> enterScope(Args, ScopeBin)
             ~> assignArguments(ArgVals)
             ~> Body
             ~> exitScope(ScopeBin, E, ReturnToStartup)
-            ~> exitSubroutine(XS, L) ...</k>
+            ~> exitSubroutine(XS, L, ScopeBin) ...</k>
         <scopeBin> ScopeBin => ScopeBin +Int 1 </scopeBin>
         <storeBins>... .Map => (ScopeBin |-> .Ints) ...</storeBins>
         <env> E </env>
@@ -734,7 +734,7 @@ module ORO-SEMANTICS-EXTRINSICS
             ~> Body
             ~> captureSubroutineResult(
               exitScope(ScopeBin, E, ReturnToStartup)
-              ~> exitSubroutine(XS, L)
+              ~> exitSubroutine(XS, L, ScopeBin)
               ~> Tag
             )
         ...</k>
@@ -758,9 +758,10 @@ module ORO-SEMANTICS-EXTRINSICS
         <store>... L |-> (_ => ArgVals[N]) ...</store>
   /* TODO: Handle <env>... N |-> var(_, bytes(L, 0)) ...</env> */
 
-  rule  <k>exitSubroutine(XS, L) => . ...</k>
+  rule  <k>exitSubroutine(XS, L, ScopeBin) => . ...</k>
         <extrinsics> _ => XS </extrinsics>
         <labels> _ => L </labels>
+        <storeBins>... (ScopeBin |-> _) => .Map ...</storeBins>
 
   rule  <k>captureSubroutineResult(CloseScope) => CloseScope ~> RetVal ...</k>
         <env>... "result" |-> var(_, opaque(L)) ...</env>
