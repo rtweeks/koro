@@ -229,8 +229,7 @@ module ORO-SEMANTICS-EXTRINSICS
         <extrinsics>... .Map => varNames(Args) |-> subroutine( !SId )</extrinsics>
         <currentRuntime> Runtime </currentRuntime>
         <unit>...
-          <runtime> Runtime </runtime>
-          <filepath> CurrentUnit </filepath>
+          <unitref> unit(Runtime CurrentUnit) </unitref>
           <subrs>... .Map => varNames(Args) |-> subroutine( !SId ) </subrs>
         ...</unit>
         (.Bag => <subr>...
@@ -289,8 +288,7 @@ module ORO-SEMANTICS-EXTRINSICS
         </extrinsics>
         <currentRuntime> Runtime </currentRuntime>
         <unit>...
-          <runtime> Runtime </runtime>
-          <filepath> CurrentUnit </filepath>
+          <unitref> unit(Runtime CurrentUnit) </unitref>
           <subrs>... .Map => varNames(Args) |-> subroutine( !SId ) </subrs>
         ...</unit>
         (.Bag => <subr>...
@@ -332,8 +330,7 @@ module ORO-SEMANTICS-EXTRINSICS
         <sourceFile> CurrentUnit </sourceFile>
         <currentRuntime> Runtime </currentRuntime>
         <unit>...
-          <runtime> Runtime </runtime>
-          <filepath> CurrentUnit </filepath>
+          <unitref> unit(Runtime CurrentUnit) </unitref>
           <macros>... .Map => keySequence2Set(Keys) |-> macro( !MId:Int ) </macros>
         ...</unit>
         (.Bag => <macro>...
@@ -408,25 +405,24 @@ module ORO-SEMANTICS-EXTRINSICS
   rule  <k>regextrResolveImports => . ...</k>
         <pendingImports> .List </pendingImports>
 
-  syntax K  ::= "unitRef" "(" Int String ")"
   syntax Bool ::= "loadedUnit" "(" String /* filepath */ ")"    [function]
-  rule  <k>loadedUnit(UnitPath) => (unitRef(Runtime UnitPath) in LUs) ...</k>
+  rule  <k>loadedUnit(UnitPath) => true ...</k>
         <currentRuntime> Runtime </currentRuntime>
-        <loadedUnits> LUs </loadedUnits>
+        <units>... <unitref> unit(Runtime UnitPath) </unitref> ...</units>
+  rule  loadedUnit(_) => false            [owise]
   syntax Bool ::= "macrosLoaded" "(" String /* filepath */ ")"    [function]
   rule  <k>macrosLoaded(UnitPath) => true ...</k>
         <currentRuntime> Runtime </currentRuntime>
         <unit>...
           <loadedByRuntime> Runtime </loadedByRuntime>
-          <filepath> UnitPath </filepath>
+          <unitref> unit(_ UnitPath)</unitref>
         ...</unit>
   rule  macrosLoaded(_) => false
   rule  <k>regextrResolveImports ...</k>
         <pendingImports> ListItem(subrImportToExtrinsics(UnitPath, ArgDeclMap)) => .List ...</pendingImports>
         <currentRuntime> Runtime </currentRuntime>
         <unit>...
-          <runtime> Runtime </runtime>
-          <filepath> UnitPath </filepath>
+          <unitref> unit(Runtime UnitPath) </unitref>
           <subrs> UnitExports:Map </subrs>
         ...</unit>
         <extrinsics>...
@@ -437,7 +433,7 @@ module ORO-SEMANTICS-EXTRINSICS
         <currentRuntime> Runtime </currentRuntime>
         <unit>...
           <loadedByRuntime> Runtime:Int </loadedByRuntime>
-          <filepath> UnitPath </filepath>
+          <unitref> unit(_ UnitPath) </unitref>
           <macros> ProvidedMacros:Map </macros>
         ...</unit>
         <extrinsics>... .Map => ProvidedMacros </extrinsics>
@@ -451,23 +447,19 @@ module ORO-SEMANTICS-EXTRINSICS
               )
               ~> regextrResolveImports
         ...</k>
-        <currentRuntime> Runtime </currentRuntime>
         <sourceFile> LoadingUnit </sourceFile>
         <refs> Refs </refs>
         <globals> Globals </globals>
         <extrinsics> Extrinsics </extrinsics>
         <pendingImports> ListItem(subrImportToExtrinsics(UnitPath, ArgDeclMap)) OtherImports:List </pendingImports>
-        <loadedUnits> LUs </loadedUnits>
         <extrinsicScopes>... regextrNewScope |-> ExtrScopeID ...</extrinsicScopes>
-        requires notBool(unitRef(Runtime UnitPath) in LUs)
+        requires notBool(loadedUnit(UnitPath))
   rule  <k>prepLoadUnit(UnitPath) => . ...</k>
         <currentRuntime> Runtime </currentRuntime>
         <sourceFile> _ => UnitPath </sourceFile>
         (.Bag => <unit>...
-          <runtime> Runtime </runtime>
-          <filepath> UnitPath </filepath>
+          <unitref> unit(Runtime UnitPath) </unitref>
         ...</unit>)
-        <loadedUnits>... .Set => SetItem(unitRef(Runtime UnitPath))</loadedUnits>
         <refs> _ => .Map </refs>
         <globals> _ => .Map </globals>
         <extrinsics> _ => .Map </extrinsics>
@@ -496,9 +488,8 @@ module ORO-SEMANTICS-EXTRINSICS
         <currentRuntime> Runtime => NewRuntime </currentRuntime>
         <sourceFile> _ => UnitPath </sourceFile>
         (.Bag => <unit>...
-          <runtime> NewRuntime </runtime>
+          <unitref> unit(NewRuntime UnitPath) </unitref>
           <loadedByRuntime> Runtime </loadedByRuntime>
-          <filepath> UnitPath </filepath>
         ...</unit>)
         <refs> _ => .Map </refs>
         <globals> _ => .Map </globals>

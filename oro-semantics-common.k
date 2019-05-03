@@ -33,14 +33,12 @@ module ORO-SEMANTICS-COMMON
     <nextRuntime> 2 </nextRuntime>
     <units>
       <unit multiplicity="*">
-        <runtime> -1 </runtime>
+        <unitref> unit(-1 "") </unitref>
         <loadedByRuntime> . </loadedByRuntime>
-        <filepath> "" </filepath>
         <subrs> .Map </subrs>
         <macros> .Map </macros>
       </unit>
     </units>
-    <loadedUnits> .Set </loadedUnits> /* Set of (runtime filepath) tuples :( */
     <extrinsicScopes> .Map </extrinsicScopes>
     <scopeBin> 1 </scopeBin>
     <startup> true </startup>
@@ -64,6 +62,7 @@ module ORO-SEMANTICS-COMMON
               | "readSourceSeq" "(" Sequence ")"              [function]
               | "yseqToK" "(" Datas ")"                       [macro]
               | "invalidPointer"
+              | "unit" "(" Int /* <- runtime */ String /* <- file path */")"
 
   syntax Data           ::= TaggedScalar
                           | FixedTypeData
@@ -85,8 +84,7 @@ module ORO-SEMANTICS-COMMON
         <currentRuntime> Runtime </currentRuntime>
         <sourceFile> _ => Val </sourceFile>
         (.Bag => <unit>...
-          <runtime> Runtime </runtime>
-          <filepath>Val</filepath>
+          <unitref> unit(Runtime Val) </unitref>
         ...</unit>)
 
   rule  <k>(.Map) => . ...</k>

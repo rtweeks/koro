@@ -46,15 +46,12 @@
   </nextRuntime>
   <units>
     <unit>
-      <runtime>
-        1
-      </runtime>
+      <unitref>
+        unit ( 1 "test/subr.oro" )
+      </unitref>
       <loadedByRuntime>
         .
       </loadedByRuntime>
-      <filepath>
-        "test/subr.oro"
-      </filepath>
       <subrs>
         SetItem ( "fluff" ) |-> subroutine ( 3 )
       </subrs>
@@ -63,15 +60,12 @@
       </macros>
     </unit>
     <unit>
-      <runtime>
-        1
-      </runtime>
+      <unitref>
+        unit ( 1 "test/imported-subr.oro" )
+      </unitref>
       <loadedByRuntime>
         .
       </loadedByRuntime>
-      <filepath>
-        "test/imported-subr.oro"
-      </filepath>
       <subrs>
         .Map
       </subrs>
@@ -80,9 +74,6 @@
       </macros>
     </unit>
   </units>
-  <loadedUnits>
-    SetItem ( unitRef ( 1 "test/subr.oro" ) )
-  </loadedUnits>
   <extrinsicScopes>
     2 |-> ( SetItem ( "fluff" ) |-> subroutine ( 3 ) )
   </extrinsicScopes>

@@ -34,15 +34,12 @@
   </nextRuntime>
   <units>
     <unit>
-      <runtime>
-        1
-      </runtime>
+      <unitref>
+        unit ( 1 "test/hello-var.oro" )
+      </unitref>
       <loadedByRuntime>
         .
       </loadedByRuntime>
-      <filepath>
-        "test/hello-var.oro"
-      </filepath>
       <subrs>
         .Map
       </subrs>
@@ -51,9 +48,6 @@
       </macros>
     </unit>
   </units>
-  <loadedUnits>
-    .Set
-  </loadedUnits>
   <extrinsicScopes>
     .Map
   </extrinsicScopes>
@@ -72,15 +66,15 @@
     </labels>
     <env>
       "useless" |-> var
-      ( string_type , opaque ( 5 ) )
+      ( string_type , opaque ( 2 ) )
     </env>
   </context>
   <globals>
     "useless" |-> var
-    ( string_type , opaque ( 5 ) )
+    ( string_type , opaque ( 2 ) )
   </globals>
   <store>
-    5 |-> ""
+    2 |-> ""
   </store>
   <storeBins>
     .Map

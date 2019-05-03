@@ -33,15 +33,12 @@
   </nextRuntime>
   <units>
     <unit>
-      <runtime>
-        1
-      </runtime>
+      <unitref>
+        unit ( 1 "test/hello-nested-seq.oro" )
+      </unitref>
       <loadedByRuntime>
         .
       </loadedByRuntime>
-      <filepath>
-        "test/hello-nested-seq.oro"
-      </filepath>
       <subrs>
         .Map
       </subrs>
@@ -50,9 +47,6 @@
       </macros>
     </unit>
   </units>
-  <loadedUnits>
-    .Set
-  </loadedUnits>
   <extrinsicScopes>
     .Map
   </extrinsicScopes>

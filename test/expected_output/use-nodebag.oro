@@ -66,15 +66,12 @@
   </nextRuntime>
   <units>
     <unit>
-      <runtime>
-        2
-      </runtime>
+      <unitref>
+        unit ( 2 "test/nodebag-macro.oro" )
+      </unitref>
       <loadedByRuntime>
         1
       </loadedByRuntime>
-      <filepath>
-        "test/nodebag-macro.oro"
-      </filepath>
       <subrs>
         SetItem ( "fluff" ) |-> subroutine ( 3 )
       </subrs>
@@ -84,15 +81,12 @@
       </macros>
     </unit>
     <unit>
-      <runtime>
-        1
-      </runtime>
+      <unitref>
+        unit ( 1 "test/use-nodebag.oro" )
+      </unitref>
       <loadedByRuntime>
         .
       </loadedByRuntime>
-      <filepath>
-        "test/use-nodebag.oro"
-      </filepath>
       <subrs>
         .Map
       </subrs>
@@ -101,9 +95,6 @@
       </macros>
     </unit>
   </units>
-  <loadedUnits>
-    .Set
-  </loadedUnits>
   <extrinsicScopes>
     2 |-> ( SetItem ( "fluff" ) |-> subroutine ( 3 ) )
   </extrinsicScopes>

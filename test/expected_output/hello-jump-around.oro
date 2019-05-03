@@ -37,15 +37,12 @@
   </nextRuntime>
   <units>
     <unit>
-      <runtime>
-        1
-      </runtime>
+      <unitref>
+        unit ( 1 "test/hello-jump-around.oro" )
+      </unitref>
       <loadedByRuntime>
         .
       </loadedByRuntime>
-      <filepath>
-        "test/hello-jump-around.oro"
-      </filepath>
       <subrs>
         .Map
       </subrs>
@@ -54,9 +51,6 @@
       </macros>
     </unit>
   </units>
-  <loadedUnits>
-    .Set
-  </loadedUnits>
   <extrinsicScopes>
     .Map
   </extrinsicScopes>

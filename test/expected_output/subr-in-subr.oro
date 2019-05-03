@@ -64,15 +64,12 @@
   </nextRuntime>
   <units>
     <unit>
-      <runtime>
-        1
-      </runtime>
+      <unitref>
+        unit ( 1 "test/subr-in-subr.oro" )
+      </unitref>
       <loadedByRuntime>
         .
       </loadedByRuntime>
-      <filepath>
-        "test/subr-in-subr.oro"
-      </filepath>
       <subrs>
         SetItem ( "fluff" ) |-> subroutine ( 2 )
       </subrs>
@@ -81,9 +78,6 @@
       </macros>
     </unit>
   </units>
-  <loadedUnits>
-    .Set
-  </loadedUnits>
   <extrinsicScopes>
     1 |-> ( SetItem ( "fluff" ) |-> subroutine ( 2 ) )
     3 |-> ( SetItem ( "gaze at" ) |-> subroutine ( 4 )
