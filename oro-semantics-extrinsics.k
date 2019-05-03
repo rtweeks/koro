@@ -14,26 +14,7 @@ module ORO-SEMANTICS-EXTRINSICS
   imports FILE-PATH
 
   syntax K  ::= "registerExtrinsics" "(" K ")"
-              | "regextrNewScope"
-              | "regextr" "(" K ")"
-              | "regextrResolveImports"
-              | "regextrCaptureScope"
-              | "regextrScanBodies" "(" List ")"
-              | "regextrUpdateSubr" "(" Int ")"
-              | "regextrUpdateMacro" "(" Int ")"
-              | "regextrRestoreOuter" "(" Map ")"
-              | "registerResolvedExtrinsic" "(" Map ")"
-              | "nsskeyResolvedInExtrinsicScan"
-              | "registerSubr" "(" Map ")"
-              | "subrReturns"
-              | "subrAccumArg"
-              | "subrImportReturns"
-              | "subrImportAccumArg"
-              | "subrRetImportAccumArg"
-              | "registerFun" "(" Map ")"
-              | "nsskeyResolvedInFunArgs"
-              | "registerMacro" "(" Map ")"
-              | "registerImport" "(" Map ")"
+              | ExtrinsicRegistrationInternals
               | "loadUnitFromYaml" "(" K "," RestoreLoadUnit ")"         [function]
               | "loadMacros" "(" Map ")"
               | "macrosLoadToExtrinsics" "(" String ")"
@@ -43,6 +24,26 @@ module ORO-SEMANTICS-EXTRINSICS
               | StatementCallableAgg
               | "macro" "(" Int ")"
 
+  syntax ExtrinsicRegistrationInternals ::= "regextrNewScope"
+                                          | "regextr" "(" K ")"
+                                          | "regextrResolveImports"
+                                          | "regextrCaptureScope"
+                                          | "regextrScanBodies" "(" List ")"
+                                          | "regextrUpdateSubr" "(" Int ")"
+                                          | "regextrUpdateMacro" "(" Int ")"
+                                          | "regextrRestoreOuter" "(" Map ")"
+                                          | "registerResolvedExtrinsic" "(" Map ")"
+                                          | "nsskeyResolvedInExtrinsicScan"
+                                          | "registerSubr" "(" Map ")"
+                                          | "subrReturns"
+                                          | "subrAccumArg"
+                                          | "subrImportReturns"
+                                          | "subrImportAccumArg"
+                                          | "subrRetImportAccumArg"
+                                          | "registerFun" "(" Map ")"
+                                          | "nsskeyResolvedInFunArgs"
+                                          | "registerMacro" "(" Map ")"
+                                          | "registerImport" "(" Map ")"
   /*
     subroutine and function capture <env/> after the first semicolon,
     <extrinsics/> after the second, and the subroutine body as the final
