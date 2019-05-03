@@ -340,10 +340,12 @@ module ORO-SEMANTICS-EXTRINSICS
           <mid> !MId </mid>
           <mruntime> Runtime </mruntime>
           <mkeys> keySequence2Set(Keys) </mkeys>
+          <menv> Env </menv>
           <mextrScope> XSKey </mextrScope>
           <mbody> yseqToK(Body) </mbody>
         ...</macro>)
         <unscannedSubrs>... .List => ListItem(!MId) </unscannedSubrs>
+        <env> Env </env>
         <extrinsicScopes>... regextrNewScope |-> XSKey ...</extrinsicScopes>
         // TODO: requires notOverridingIntrinsic(keySequence2Set(Keys))
 
@@ -603,6 +605,53 @@ module ORO-SEMANTICS-EXTRINSICS
           ~> executeSubroutine((varDecl("result" : RetType), Args), .Map, E, XS, Body)
         ...</k>
         <extrinsicScopes>... XSKey |-> XS:Map ...</extrinsicScopes>
+
+  syntax K  ::= "macroInvocation" "(" Int /* runtime */ ";" Map /* env */ ";" Int /* XSKey */ ";" K /* body */ ";" Map /* call */ ")"
+              | "assignMacroArguments" "(" Map ")"
+              | "assignMacroArgument"
+              | "captureMacroResult" "(" K ")"
+              | "restoreRuntime" "(" Int ")"
+  rule  <k> Call:Map => macroInvocation( Runtime; Env; XSKey; Body; Call ) ...</k>
+        <extrinsics>... keys(Call) |-> macro(MacId) ...</extrinsics>
+        <macro>...
+          <mid> MacId </mid>
+          <mruntime> Runtime </mruntime>
+          <menv> Env </menv>
+          <mextrScope> XSKey </mextrScope>
+          <mbody> Body </mbody>
+        ...</macro>
+  rule  <k>macroInvocation( MacroRuntime; E'; XSKey; Body; Call)
+          =>  enterSubroutine(XS', E')
+              ~> enterScope(.VarDecls, ScopeBin)
+              ~> assignMacroArguments(Call)
+              ~> Body
+              ~> captureMacroResult(
+                exitScope(ScopeBin, E, ReturnToStartup)
+                ~> exitSubroutine(XS, L)
+                ~> restoreRuntime(CallingRuntime)
+              )
+        ...</k>
+        <currentRuntime> CallingRuntime => MacroRuntime </currentRuntime>
+        <extrinsicScopes>... XSKey |-> XS' ...</extrinsicScopes>
+        <scopeBin> ScopeBin => ScopeBin +Int 1 </scopeBin>
+        <storeBins>... .Map => (ScopeBin |-> .Ints)</storeBins>
+        <env> E </env>
+        <extrinsics> XS </extrinsics>
+        <labels> L </labels>
+        <startup> ReturnToStartup </startup>
+  rule  <k> assignMacroArguments( .Map ) => . ...</k>
+        <env>... .Map => ("result" |-> var(yamlnode_type, opaque(!L:Int))) </env>
+        <store>... .Map => (!L |-> (.Map)) </store>
+  rule  assignMacroArguments( ArgVals ) => assignMacroArgument ~> choice(ArgVals) ~> assignMacroArguments( ArgVals )
+        requires size(ArgVals) >Int 0
+  rule  <k>assignMacroArgument ~> N ~> assignMacroArguments( ArgVals ) => assignMacroArguments( ArgVals[N <- undef] ) ...</k>
+        <env>... .Map => (N |-> var(yamlnode_type, opaque(!L:Int))) </env>
+        <store>... .Map => (!L |-> ArgVals[N]) </store>
+  rule  <k>captureMacroResult(CloseScope) => CloseScope ~> OutputCode ...</k>
+        <env>... "result" |-> var(_, opaque(L)) ...</env>
+        <store>... L |-> OutputCode ...</store>
+  rule  <k>restoreRuntime(Runtime) => . ...</k>
+        <currentRuntime> _ => Runtime </currentRuntime>
 
   syntax K  ::= "evaluate" "(" DataType ":" ReturningSubrCall "," K ")"
   rule  <k> evaluate(T : (Call:Map), Tag ) =>

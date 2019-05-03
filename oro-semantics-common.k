@@ -21,6 +21,7 @@ module ORO-SEMANTICS-COMMON
           <mid> -1 </mid>
           <mruntime> -3 </mruntime>
           <mkeys> .Set </mkeys>
+          <menv> .Map </menv>
           <mextrScope> -1 </mextrScope>
           <mbody> . </mbody>
         </macro>
@@ -87,6 +88,7 @@ module ORO-SEMANTICS-COMMON
           <filepath>Val</filepath>
         ...</unit>)
 
+  rule  <k>(.Map) => . ...</k>
   rule  <k>yseqToK( .Datas ) => . ...</k>
   rule  <k>yseqToK( M:Map, Ds ) => M ~> yseqToK( Ds ) ...</k>
 
