@@ -63,6 +63,9 @@
       </macros>
     </unit>
   </units>
+  <loadedUnits>
+    .Set
+  </loadedUnits>
   <extrinsicScopes>
     1 |-> ( SetItem ( "fluff" ) |-> subroutine ( 2 ) )
   </extrinsicScopes>

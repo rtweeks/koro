@@ -50,6 +50,9 @@
       </macros>
     </unit>
   </units>
+  <loadedUnits>
+    .Set
+  </loadedUnits>
   <extrinsicScopes>
     .Map
   </extrinsicScopes>

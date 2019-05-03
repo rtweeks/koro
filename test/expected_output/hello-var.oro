@@ -51,6 +51,9 @@
       </macros>
     </unit>
   </units>
+  <loadedUnits>
+    .Set
+  </loadedUnits>
   <extrinsicScopes>
     .Map
   </extrinsicScopes>
@@ -69,15 +72,15 @@
     </labels>
     <env>
       "useless" |-> var
-      ( string_type , opaque ( 2 ) )
+      ( string_type , opaque ( 5 ) )
     </env>
   </context>
   <globals>
     "useless" |-> var
-    ( string_type , opaque ( 2 ) )
+    ( string_type , opaque ( 5 ) )
   </globals>
   <store>
-    2 |-> ""
+    5 |-> ""
   </store>
   <storeBins>
     .Map

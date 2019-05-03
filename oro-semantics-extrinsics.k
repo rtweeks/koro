@@ -408,11 +408,11 @@ module ORO-SEMANTICS-EXTRINSICS
   rule  <k>regextrResolveImports => . ...</k>
         <pendingImports> .List </pendingImports>
 
+  syntax K  ::= "unitRef" "(" Int String ")"
   syntax Bool ::= "loadedUnit" "(" String /* filepath */ ")"    [function]
-  rule  <k>loadedUnit(UnitPath) => true ...</k>
+  rule  <k>loadedUnit(UnitPath) => (unitRef(Runtime UnitPath) in LUs) ...</k>
         <currentRuntime> Runtime </currentRuntime>
-        <unit>... <runtime>Runtime</runtime> <filepath>UnitPath</filepath> ...</unit>
-  rule  loadedUnit(_) => false            [owise]
+        <loadedUnits> LUs </loadedUnits>
   syntax Bool ::= "macrosLoaded" "(" String /* filepath */ ")"    [function]
   rule  <k>macrosLoaded(UnitPath) => true ...</k>
         <currentRuntime> Runtime </currentRuntime>
@@ -451,13 +451,15 @@ module ORO-SEMANTICS-EXTRINSICS
               )
               ~> regextrResolveImports
         ...</k>
+        <currentRuntime> Runtime </currentRuntime>
         <sourceFile> LoadingUnit </sourceFile>
         <refs> Refs </refs>
         <globals> Globals </globals>
         <extrinsics> Extrinsics </extrinsics>
         <pendingImports> ListItem(subrImportToExtrinsics(UnitPath, ArgDeclMap)) OtherImports:List </pendingImports>
+        <loadedUnits> LUs </loadedUnits>
         <extrinsicScopes>... regextrNewScope |-> ExtrScopeID ...</extrinsicScopes>
-        requires notBool(loadedUnit(UnitPath))
+        requires notBool(unitRef(Runtime UnitPath) in LUs)
   rule  <k>prepLoadUnit(UnitPath) => . ...</k>
         <currentRuntime> Runtime </currentRuntime>
         <sourceFile> _ => UnitPath </sourceFile>
@@ -465,6 +467,7 @@ module ORO-SEMANTICS-EXTRINSICS
           <runtime> Runtime </runtime>
           <filepath> UnitPath </filepath>
         ...</unit>)
+        <loadedUnits>... .Set => SetItem(unitRef(Runtime UnitPath))</loadedUnits>
         <refs> _ => .Map </refs>
         <globals> _ => .Map </globals>
         <extrinsics> _ => .Map </extrinsics>

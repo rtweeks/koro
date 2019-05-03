@@ -12,7 +12,7 @@
       .Map
       ,
       2 ) ~> yseqToK ( .VarDecls ) ~> exitScope ( 1 , "some global value" |-> var
-      ( string_type , opaque ( 4 ) )
+      ( string_type , opaque ( 7 ) )
       ,
       true ) ~> exitSubroutine ( SetItem ( "consume address" ) |-> subroutine ( 2 )
       SetItem
@@ -103,6 +103,9 @@
       </macros>
     </unit>
   </units>
+  <loadedUnits>
+    .Set
+  </loadedUnits>
   <extrinsicScopes>
     1 |-> ( SetItem ( "consume address" ) |-> subroutine ( 2 )
       SetItem
@@ -128,14 +131,14 @@
   </context>
   <globals>
     "some global value" |-> var
-    ( string_type , opaque ( 4 ) )
+    ( string_type , opaque ( 7 ) )
   </globals>
   <store>
-    4 |-> ""
     17 |-> opaque_ptr
-    ( string_type , 4 )
+    ( string_type , 7 )
     19 |-> opaque_ptr
-    ( string_type , 4 )
+    ( string_type , 7 )
+    7 |-> ""
   </store>
   <storeBins>
     1 |-> ( 17 , .VarDecls )

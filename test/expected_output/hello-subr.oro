@@ -68,6 +68,9 @@
       </macros>
     </unit>
   </units>
+  <loadedUnits>
+    .Set
+  </loadedUnits>
   <extrinsicScopes>
     1 |-> ( SetItem ( "\u6253\u5370" ) |-> subroutine ( 2 ) )
   </extrinsicScopes>

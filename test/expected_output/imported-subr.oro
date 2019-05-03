@@ -12,20 +12,25 @@
     SetItem ( "fluff" ) |-> subroutine ( 3 )
   </extrinsics>
   <extrs>
-    <subr>
-      <id>
-        3
-      </id>
-      <attrs>
-        "args" |-> ( varDecl ( "fluff" : string_type ) , .VarDecls )
-        "env" |-> ( .Map )
-        "extrScope" |-> 2
-      </attrs>
-      <body>
-        yseqToK ( ( yval ( | "?" | "Oro/Core/Flow/Label" ) |-> yval ( | "?" | "nowhere" ) )
-          , .VarDecls )
-      </body>
-    </subr>
+    <definedSubrs>
+      <subr>
+        <id>
+          3
+        </id>
+        <attrs>
+          "args" |-> ( varDecl ( "fluff" : string_type ) , .VarDecls )
+          "env" |-> ( .Map )
+          "extrScope" |-> 2
+        </attrs>
+        <body>
+          yseqToK ( ( yval ( | "?" | "Oro/Core/Flow/Label" ) |-> yval ( | "?" | "nowhere" )
+              ) , .VarDecls )
+        </body>
+      </subr>
+    </definedSubrs>
+    <definedMacros>
+      .MacroCellBag
+    </definedMacros>
     <unscannedSubrs>
       .List
     </unscannedSubrs>
@@ -36,30 +41,48 @@
   <currentRuntime>
     1
   </currentRuntime>
+  <nextRuntime>
+    2
+  </nextRuntime>
   <units>
     <unit>
       <runtime>
         1
       </runtime>
+      <loadedByRuntime>
+        .
+      </loadedByRuntime>
       <filepath>
         "test/subr.oro"
       </filepath>
       <subrs>
         SetItem ( "fluff" ) |-> subroutine ( 3 )
       </subrs>
+      <macros>
+        .Map
+      </macros>
     </unit>
     <unit>
       <runtime>
         1
       </runtime>
+      <loadedByRuntime>
+        .
+      </loadedByRuntime>
       <filepath>
         "test/imported-subr.oro"
       </filepath>
       <subrs>
         .Map
       </subrs>
+      <macros>
+        .Map
+      </macros>
     </unit>
   </units>
+  <loadedUnits>
+    SetItem ( unitRef ( 1 "test/subr.oro" ) )
+  </loadedUnits>
   <extrinsicScopes>
     2 |-> ( SetItem ( "fluff" ) |-> subroutine ( 3 ) )
   </extrinsicScopes>
@@ -87,8 +110,7 @@
     .Map
   </store>
   <storeBins>
-    1 |-> ( 6 , .VarDecls )
-    2 |-> ( 8 , .VarDecls )
+    .Map
   </storeBins>
   <arch>
     wordSize |-> 64

@@ -40,6 +40,7 @@ module ORO-SEMANTICS-COMMON
         <macros> .Map </macros>
       </unit>
     </units>
+    <loadedUnits> .Set </loadedUnits> /* Set of (runtime filepath) tuples :( */
     <extrinsicScopes> .Map </extrinsicScopes>
     <scopeBin> 1 </scopeBin>
     <startup> true </startup>
